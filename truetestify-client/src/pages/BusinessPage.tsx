@@ -3,21 +3,32 @@ import { useParams } from 'react-router-dom';
 import ReviewRecorder from '../components/ReviewRecorder';
 import { UserContext } from '../context/UserContex';
 
+// interface Review {
+//   id: string;
+//   content: string;
+//   author: string;
+//   file : File | null;
+//   approved: boolean;
+// }
 interface Review {
-  id: string;
-  content: string;
-  author: string;
-  file : File | null;
-  approved: boolean;
+    id: string,
+    url: File | null,
+    // url: string,
+    content?:string,
+    author: string,
+    rating: Number,
+    createdAt: string,
+    approved: boolean,
 }
-
 const BusinessPage = () => {
  const {reviews,setReviwes} = useContext(UserContext);
   const {slug} = useParams();
   // const [reviews, setReviews] = useState<Review[]>([]);
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [rating, setRating] = useState(0);
+  const [createdAt, setCreatedAt] = useState('');
+  const [url, setUrl] = useState<File | null>(null);
 
   const handleFileUpload = (e:React.ChangeEvent<HTMLInputElement>)=>{
     const selectedFile = e.target.files?.[0];
@@ -25,11 +36,11 @@ const BusinessPage = () => {
        const isValid = selectedFile.type.startsWith('video') || selectedFile.type.startsWith('audio');
 
        if (isValid) {
-          setFile(selectedFile)
+          setUrl(selectedFile)
           console.log("selected file " + selectedFile.name);
        }
     }else{
-      setFile(null)
+      setUrl(null)
     }
   }
    
@@ -40,13 +51,17 @@ const BusinessPage = () => {
       id: Date.now().toString(),
       content,
       author,
-      file,
+      // file,
+      url,
+      rating,
+      createdAt,
       approved: false,
     };
     setReviwes([newReview, ...reviews]);
     setContent('');
     setAuthor('');
-    setFile(null);
+    setCreatedAt(Date.now().toLocaleString());
+    setUrl(null);
   };
 
   // const handleApprove = (id: string) => {
@@ -77,12 +92,14 @@ const BusinessPage = () => {
           placeholder="Write a review..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          required
+          
           className="w-full border border-gray-300 rounded px-4 py-2"
         ></textarea>
         <div className='p-4'>
       <label htmlFor="mediaUpload" className='block mb-2 font-semibold'>Upload Video/Audio</label>
       <input className='block border border-gray-600 rounded ' type="file" id="mediaUpload" accept='video/*,audio/*' onChange={handleFileUpload} />
+      <label htmlFor="rating" className='block mb-2 font-semibold'>Rating</label>
+      <input className='block border border-gray-600 rounded ' type="number" maxLength={5} value={rating} onChange={(e)=>setRating(Number(e.target.value))} />
         </div>
         <button
           type="submit"

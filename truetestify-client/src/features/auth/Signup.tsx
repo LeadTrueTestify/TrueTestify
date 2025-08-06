@@ -47,13 +47,13 @@ const Signup = () => {
           </div>
          {role === "business-admin" ? (<div>
             <label
-              htmlFor="business"
+              htmlFor="business-admin"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Business Name
             </label>
             <input
-              id="business"
+              id="business-admin"
               type="text"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
