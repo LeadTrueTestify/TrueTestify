@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { UserContext } from "../../context/UserContex";
 
 const Signup = () => {
+     const {setUser} =useContext(UserContext)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -13,6 +15,7 @@ const Signup = () => {
     if (role === "business-admin") {
       localStorage.setItem("businessName", businessName);
       navigate("/dashboard")
+      setUser(true)
     }
     // Simulate signup logic
     console.log({ email, password, role, businessName });
