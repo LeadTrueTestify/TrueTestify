@@ -44,7 +44,7 @@ function DashboardPage() {
       </h1>
       <Link
         to={`/business/${businessName}`}
-        className="text-black border rounded border-blue-300 bg-blue-500 hover:bg-blue-600 mx-2 my-2 flex items-start justify-center row-end-1 w-50"
+        className="text-black border rounded border-blue-300 bg-blue-500 hover:bg-blue-600 mx-2 my-2 flex items-start justify-center w-50"
       >
         go to your business
       </Link>
