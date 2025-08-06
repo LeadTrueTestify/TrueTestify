@@ -11,11 +11,14 @@ type UserContextType = {
 };
 
 interface Review {
-  id: string;
-  content: string;
-  author: string;
-  file : File | null;
-  approved: boolean;
+    id: string,
+    url: File | null,
+    // url: string,
+    content?:string,
+    author: string,
+    rating: Number,
+    createdAt: string,
+    approved: boolean,
 }
 export const UserContext = createContext<UserContextType>({
     user: false,

@@ -6,7 +6,7 @@ import PricingPage from "./PricingPage";
 import TextReviewCard from "../components/TextReviewCard";
 import Widgets from "../features/widgets/Widgets";
 import VideoFeatures from "../features/widgets/VideoFeatures";
-import Privacy from "../features/widgets/Privacy";
+// import Privacy from "../features/widgets/Privacy";
 
 const HomePage = () => {
   const videos = mockReviews.filter(
@@ -54,10 +54,10 @@ const HomePage = () => {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 border border-blue-200 bg-blue-50 py-10 px-5">
           {videos.map((r, i) => (
-            <VideoReviewCard key={i} {...r} url={r.url || ""} />
+            <VideoReviewCard key={i} {...r} url={r.url || ""} type={r.type||"video/mp4"} rating={r.rating||0} />
           ))}
           {audios.map((r, i) => (
-            <AudioReviewCard key={i} {...r} audiourl={r.audiourl || ""} />
+            <AudioReviewCard key={i} {...r} url={r.audiourl || ""} type={r.type||"audio/mpeg"} rating={r.rating||0} />
           ))}
           {text.map((r) => (
             <TextReviewCard key={r.id} {...r} content={r.content || ""} />
