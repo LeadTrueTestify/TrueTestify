@@ -35,7 +35,7 @@
 // export default Privacy;
 import React from 'react';
 
-const Privacy: React.FC = () => {
+const Privacy = () => {
   return (
     <div className="flex flex-col md:flex-row gap-6 p-6 bg-[#f9f9fc] rounded-lg border border-[#e0e0f0]">
       {/* Left Section */}

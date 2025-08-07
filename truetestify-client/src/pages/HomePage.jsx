@@ -54,10 +54,10 @@ const HomePage = () => {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 border border-blue-200 bg-blue-50 py-10 px-5">
           {videos.map((r, i) => (
-            <VideoReviewCard key={i} {...r} url={r.url || ""} type={r.type||"video/mp4"} rating={r.rating||0} />
+            <VideoReviewCard key={i} {...r} url={r.url}  />
           ))}
           {audios.map((r, i) => (
-            <AudioReviewCard key={i} {...r} url={r.audiourl || ""} type={r.type||"audio/mpeg"} rating={r.rating||0} />
+            <AudioReviewCard key={i} {...r} url={r.audiourl || ""} />
           ))}
           {text.map((r) => (
             <TextReviewCard key={r.id} {...r} content={r.content || ""} />
