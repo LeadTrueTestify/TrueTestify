@@ -1,14 +1,14 @@
 import React from "react";
 
-type Props = {
-  url: string;
-  author: string;
-  rating: number;
-  createdAt: string;
-  type: string;
-};
+// type Props = {
+//   url: string;
+//   author: string;
+//   rating: number;
+//   createdAt: string;
+//   type: string;
+// };
 
-const AudioReviewCard: React.FC<Props> = ({
+const AudioReviewCard = ({
   url,
   type,
   author,

@@ -1,7 +1,5 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import VideoReviewCard from "../components/VideoReviewCard";
-import ReviewRecorder from "../components/ReviewRecorder";
-import { mockReviews } from "../mock/reviews";
 import AudioReviewCard from "../components/AudioReviewCard";
 import TextReviewCard from "../components/TextReviewCard";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,8 +7,8 @@ import { UserContext } from "../context/UserContex";
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const { reviews, setReviwes, setUser } = useContext(UserContext);
-  const [allowTextReviews, setAllowTextReviews] = useState(true);
+  const { reviews, setReviwes, setUser,allowTextReviews,setAllowTextReviews } = useContext(UserContext);
+  // const [allowTextReviews, setAllowTextReviews] = useState(true);
   // console.log(reviews);
   const handleLogout = () => {
     localStorage.clear();
@@ -26,12 +24,12 @@ function DashboardPage() {
   // const audios = reviews.filter((r) => r.file?.type === "audio/");
   // const text = mockReviews.filter((r) => r.type === "text");
   const businessName = localStorage.getItem("businessName");
-  const handleApprove = (id: string) => {
+  const handleApprove = (id) => {
     setReviwes(
       reviews.map((r) => (r.id === id ? { ...r, approved: !false } : r))
     );
   };
-  const handleReject = (id: string) => {
+  const handleReject = (id) => {
     setReviwes(
       reviews.map((r) => (r.id === id ? { ...r, approved: false } : r))
     );

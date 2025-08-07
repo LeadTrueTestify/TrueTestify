@@ -10,7 +10,7 @@ const Signup = () => {
   const [role, setRole] = useState("User");
   const navigate = useNavigate();
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = (e) => {
     e.preventDefault();
     if (role === "business-admin") {
       localStorage.setItem("businessName", businessName);
