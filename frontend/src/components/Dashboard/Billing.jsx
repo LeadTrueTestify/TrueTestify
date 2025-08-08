@@ -9,7 +9,7 @@ const Billing = () => {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-blue-600 mb-6">Billing</h2>
+      <h2 className="text-3xl font-bold text-blue-600 mt-2">Billing</h2>
       <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Current Plan</h3>
         <div className="space-y-4">
@@ -26,11 +26,11 @@ const Billing = () => {
             <span className="font-medium text-gray-800">{billingInfo.nextBillDate}</span>
           </div>
         </div>
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <button className="px-6 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 transition-colors">
             Manage Subscription
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
