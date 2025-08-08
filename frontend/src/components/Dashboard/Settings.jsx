@@ -1,3 +1,5 @@
+import toast from "react-hot-toast";
+
 const Settings = () => {
   const widgetCode = `<script src="https://truetestify.com/embed/yourbusiness.js" data-layout="grid"></script>`;
   const iframeCode = `<iframe src="https://truetestify.com/embed/yourbusiness.html" frameborder="0" width="100%" height="500px"></iframe>`;
@@ -14,7 +16,7 @@ const Settings = () => {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-blue-600 mb-6">Settings & Widgets</h2>
+      <h2 className="text-3xl font-bold text-blue-600 mt-2">Settings & Widgets</h2>
       <div className="bg-gray-100 p-6 rounded-lg shadow-sm space-y-6">
         <div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Embeddable JS Widget</h3>

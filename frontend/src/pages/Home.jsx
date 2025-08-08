@@ -1,13 +1,11 @@
 import { Link } from "react-router-dom";
-import Navbar from "../components/Shared/Navbar";
 import { ChartBarIcon, CogIcon, PhotoIcon, PlayIcon } from "@heroicons/react/16/solid";
 import FeatureCard from "../components/UI/FeatureCard";
 
 const Home = () => {
   return (
     <div className="container mx-auto">
-      <Navbar />
-      <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+      <div className="text-center p-8 bg-white rounded-lg shadow-lg mt-2">
         <h1 className="text-5xl font-extrabold text-blue-600 mb-4">TrueTestify</h1>
         <p className="text-xl text-gray-700 mb-6 font-medium">
           The video-only platform for building trust and emotional impact with customer testimonials.
