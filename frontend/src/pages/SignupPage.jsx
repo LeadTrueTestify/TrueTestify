@@ -38,6 +38,16 @@ const SignupPage = () => {
 
   const handleSignup = (e) => {
     e.preventDefault();
+    if (role === 'admin' && !businessName) {
+      toast.error('Please enter a business name.');
+      return;
+    }
+    signup(role, businessName);
+    if (role === 'admin') {
+      navigate('/dashboard/moderation');
+    } else {
+      navigate('/');
+    }
     if (password !== confirmPassword) {
       toast.error("Passwords do not match.");
       return;
@@ -46,6 +56,19 @@ const SignupPage = () => {
     signup(email, password, role, businessName, publicReviewUrl);
     navigate('/');
   };
+  // const handleSignup = (e) => {
+  //   e.preventDefault();
+  //   if (role === 'admin' && !businessName) {
+  //     toast.error('Please enter a business name.');
+  //     return;
+  //   }
+  //   signup(role, businessName);
+  //   if (role === 'admin') {
+  //     navigate('/dashboard/moderation');
+  //   } else {
+  //     navigate('/');
+  //   }
+  // };
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
@@ -158,6 +181,47 @@ const SignupPage = () => {
           className="w-full py-3 px-4 bg-blue-600 text-white font-bold rounded-full hover:bg-blue-700 transition-colors shadow-lg"
         >
           Sign Up
+        </button>
+      </form>
+      <p className="text-gray-600 mb-8">
+        Choose your account type to get started.
+      </p>
+      <form onSubmit={handleSignup} className="space-y-6">
+        <div className="flex justify-center space-x-4">
+          <button
+            type="button"
+            onClick={() => setRole('admin')}
+            className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${role === 'admin' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+          >
+            <UserIcon className="h-10 w-10 mb-2" />
+            <span className="font-bold">Admin</span>
+            <p className="text-sm text-center mt-1">For business owners to manage reviews.</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole('reviewer')}
+            className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${role === 'reviewer' ? 'border-blue-600 bg-blue-50 text-blue-600' : 'border-gray-300 text-gray-600 hover:bg-gray-100'}`}
+          >
+            <UserPlusIcon className="h-10 w-10 mb-2" />
+            <span className="font-bold">Reviewer</span>
+            <p className="text-sm text-center mt-1">For customers to submit a review.</p>
+          </button>
+        </div>
+        {role === 'admin' && (
+          <input
+            type="text"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="Your Business Name"
+            required
+            className="w-full p-3 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        )}
+        <button
+          type="submit"
+          className="w-full py-3 px-4 bg-orange-500 text-white font-bold tracking-wide hover:bg-orange-600 transition-colors"
+        >
+          Create Account
         </button>
       </form>
       <div className="mt-6 text-center">

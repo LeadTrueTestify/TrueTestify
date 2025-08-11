@@ -5,6 +5,7 @@ import {
   CreditCardIcon,
   HomeIcon,
   PhotoIcon,
+  PuzzlePieceIcon,
   UserIcon,
   XMarkIcon,
 } from "@heroicons/react/16/solid";
@@ -14,7 +15,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 const Sidebar = ({ setIsSidebarOpen }) => {
-  const { logout,user } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
 
   return (
     <div className="w-64 bg-slate-800 text-white p-4 flex flex-col shadow-xl">
@@ -46,6 +47,14 @@ const Sidebar = ({ setIsSidebarOpen }) => {
           </li>
           <li className="mb-2">
             <NavLink
+              to="/dashboard/widget-settings"
+              icon={<PuzzlePieceIcon className="h-5 w-5" />}
+              label="Widgets"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          </li>
+          <li className="mb-2">
+            <NavLink
               to="/dashboard/analytics"
               icon={<ChartBarIcon className="h-5 w-5" />}
               label="Analytics"
@@ -54,7 +63,7 @@ const Sidebar = ({ setIsSidebarOpen }) => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="/dashboard/billing"
+              to="/dashboard/manage-subscription"
               icon={<CreditCardIcon className="h-5 w-5" />}
               label="Billing"
               onClick={() => setIsSidebarOpen(false)}
@@ -62,7 +71,7 @@ const Sidebar = ({ setIsSidebarOpen }) => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="/dashboard/settings"
+              to="/dashboard/admin-settings"
               icon={<CogIcon className="h-5 w-5" />}
               label="Settings"
               onClick={() => setIsSidebarOpen(false)}
@@ -94,7 +103,6 @@ const Sidebar = ({ setIsSidebarOpen }) => {
           Back to Home
         </Link>
       </div>
-
     </div>
   );
 };

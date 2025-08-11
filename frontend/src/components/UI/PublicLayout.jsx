@@ -7,8 +7,8 @@ const PublicLayout = () => {
   const isDashboard = location.pathname.startsWith("/dashboard");
   return (
     <div className="container mx-auto p-4 md:p-0">
-      <Navbar />
-      <Outlet />
+      {/* <Navbar /> */}
+      {/* <Outlet /> */}
       {!isDashboard && <FloatingReviewWidget />}
     </div>
   );

@@ -1,12 +1,13 @@
+import React from "react";
+
 const FeatureCard = ({ title, description, icon }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md flex items-start space-x-4">
-    <div className="flex-shrink-0 text-orange-500 bg-orange-100 p-3 rounded-full">
-      {icon}
+  <div className="bg-white p-8 border border-gray-200 flex flex-col items-center text-center">
+    <div className="text-blue-600 p-4 mb-4 border-2 border-blue-600">
+      {React.cloneElement(icon, { className: "h-10 w-10" })}
     </div>
-    <div>
-      <h3 className="text-xl font-semibold text-blue-600">{title}</h3>
-      <p className="mt-2 text-gray-600">{description}</p>
-    </div>
+    <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
+    <p className="text-gray-600">{description}</p>
   </div>
 );
+
 export default FeatureCard;

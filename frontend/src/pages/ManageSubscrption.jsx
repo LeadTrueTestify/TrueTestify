@@ -4,10 +4,8 @@ import {AuthContext} from "../context/AuthContext"
 import Billing from "../components/Dashboard/Billing";
 
 const ManageSubscription = () => {
-  const { user, role } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Mock data for the subscription status
   const subscriptionData = {
     plan: 'Pro Plan',
     storageUsed: 3.5, // in GB
@@ -19,8 +17,8 @@ const ManageSubscription = () => {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-blue-600 mb-6">Manage Subscription</h2>
-      <div className="bg-white p-6 rounded-lg shadow-sm">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Manage Subscription</h2>
+      <div className="bg-white p-6 shadow-sm border border-gray-200">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Your Current Plan: <span className="font-bold text-orange-500">{subscriptionData.plan}</span></h3>
         <p className="text-gray-600 mb-2">Next Billing Date: {subscriptionData.nextBillDate}</p>
 
@@ -29,9 +27,9 @@ const ManageSubscription = () => {
             <span>Storage Usage</span>
             <span>{subscriptionData.storageUsed} / {subscriptionData.storageLimit} GB</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <div className="w-full bg-gray-200 h-2.5 mt-2">
             <div
-              className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+              className="bg-blue-600 h-2.5 transition-all duration-500"
               style={{ width: `${storagePercentage}%` }}
             ></div>
           </div>
@@ -40,13 +38,12 @@ const ManageSubscription = () => {
         <div className="mt-8 text-center">
           <button
             onClick={() => navigate('/pricing')}
-            className="px-6 py-3 bg-orange-500 text-white font-bold rounded-full hover:bg-orange-600 transition-colors shadow-lg"
+            className="px-8 py-3 bg-orange-500 text-white font-bold tracking-wide transition-colors hover:bg-orange-600"
           >
             Upgrade or Change Plan
           </button>
         </div>
       </div>
-      <Billing />
     </div>
   );
 };
