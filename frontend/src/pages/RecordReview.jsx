@@ -12,8 +12,8 @@ import { MOCK_REVIEWS } from "../assets/mockData";
 
 //  RecordReview.jsx
 const RecordReview = () => {
-  const { getInitialData,user } = useContext(AuthContext);
-  const  businessName  = user.publicReviewUrl
+  const { getInitialData, user } = useContext(AuthContext);
+  const businessName = user.publicReviewUrl;
   const [hasConsented, setHasConsented] = useState(false);
   const [mediaType, setMediaType] = useState("video"); // 'video', 'audio', 'text'
   const [isRecording, setIsRecording] = useState(false);
@@ -113,8 +113,8 @@ const RecordReview = () => {
       mediaRecorder.stop();
       toast.success("Review ready to submit!");
     }
-            setStream(null);
-        setMediaRecorder(null);
+    setStream(null);
+    setMediaRecorder(null);
     setIsRecording(false);
   };
 
@@ -343,7 +343,9 @@ const RecordReview = () => {
           </div>
           <div className="ml-3 text-sm">
             <label htmlFor="consent" className="font-medium text-gray-700">
-              {`I agree to be recorded and allow ${businessName} to use my review
+              {`I agree to be recorded and allow ${
+                !businessName ? "businessName" : businessName
+              } to use my review
               publicly.`}
             </label>
           </div>
@@ -372,9 +374,6 @@ const RecordReview = () => {
     </div>
   );
 };
-
-
-
 
 // USE When the Database is connected
 
@@ -443,7 +442,7 @@ const RecordReview = () => {
 
 //       const options = { mimeType: mediaType === 'video' ? 'video/webm' : 'audio/webm' };
 //       const recorder = new MediaRecorder(mediaStream, options);
-      
+
 //       recorder.ondataavailable = (event) => {
 //         if (event.data.size > 0) {
 //           setMediaChunks(prevChunks => [...prevChunks, event.data]);
@@ -494,7 +493,7 @@ const RecordReview = () => {
 //       toast.error('Text review must be at least 10 characters.');
 //       return;
 //     }
-    
+
 //     // Add review to local storage
 //     const newReview = {
 //       id: Date.now(),
@@ -507,18 +506,18 @@ const RecordReview = () => {
 //       url: mediaType !== 'text' ? null : null,
 //       content: mediaType === 'text' ? textReview : null,
 //     };
-    
+
 //     const allReviews = getInitialData('reviews', MOCK_REVIEWS);
 //     const updatedReviews = [...allReviews, newReview];
 //     localStorage.setItem('reviews', JSON.stringify(updatedReviews));
 
 //     toast.success('Your review has been submitted for moderation!');
-    
+
 //     // Reset form and redirect
 //     setRecordedMedia(null);
 //     setTextReview('');
 //     setHasConsented(false);
-    
+
 //     setTimeout(() => {
 //         navigate('/');
 //     }, 2000);
@@ -552,7 +551,7 @@ const RecordReview = () => {
 //   return (
 //     <div className="mt-2 p-4 bg-white rounded-lg shadow-lg max-w-2xl mx-auto">
 //       <h2 className="text-3xl font-bold text-blue-600 mb-4">Leave a Review</h2>
-      
+
 //       <div className="mb-6 flex justify-center space-x-2 p-2 bg-gray-100 rounded-lg">
 //         <button onClick={() => setMediaType('video')} className={`flex-1 flex justify-center items-center px-4 py-2 rounded-full font-semibold transition-colors ${mediaType === 'video' ? 'bg-orange-500 text-white' : 'bg-transparent text-gray-700 hover:bg-gray-200'}`}>
 //           <VideoCameraIcon className="h-5 w-5 mr-2" /> Video
