@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import Settings from "./Settings";
 
 const AdminSettings = () => {
-      const { getInitialData } = useContext(AuthContext);
+  const { getInitialData } = useContext(AuthContext);
   const [allowTextReviews, setAllowTextReviews] = useState(getInitialData('allowTextReviews', false));
 
   const handleToggle = () => {
@@ -16,8 +16,8 @@ const AdminSettings = () => {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-blue-600 mt-6">Admin Settings</h2>
-      <div className="bg-gray-100 p-6 rounded-lg shadow-sm flex items-center justify-between">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Admin Settings</h2>
+      <div className="bg-white p-6 border border-gray-200 shadow-sm flex items-center justify-between">
         <div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Enable Text Reviews</h3>
           <p className="text-gray-600 max-w-md">
@@ -26,19 +26,18 @@ const AdminSettings = () => {
         </div>
         <button
           onClick={handleToggle}
-          className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
+          className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
             allowTextReviews ? 'bg-orange-500' : 'bg-gray-200'
           }`}
         >
           <span
             aria-hidden="true"
-            className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${
+            className={`pointer-events-none inline-block h-5 w-5 bg-white shadow transform ring-0 transition ease-in-out duration-200 ${
               allowTextReviews ? 'translate-x-5' : 'translate-x-0'
             }`}
           ></span>
         </button>
       </div>
-      <Settings/>
     </div>
   );
 };

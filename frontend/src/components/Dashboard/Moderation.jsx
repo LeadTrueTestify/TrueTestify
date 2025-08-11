@@ -8,7 +8,7 @@ import ReviewPreviewModal from "./ReviewPreviewModal";
 
 
 const Moderation = () => {
-  const {getInitialData} = useContext(AuthContext)
+  const { getInitialData } = useContext(AuthContext);
   const [reviews, setReviews] = useState(getInitialData('reviews', MOCK_REVIEWS));
   const [selectedReview, setSelectedReview] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,53 +30,53 @@ const Moderation = () => {
     toast.success(`Review ${id} has been ${newStatus}.`);
     setIsModalOpen(false); // Close modal on action
   };
-  
+
   const openModal = (review) => {
     setSelectedReview(review);
     setIsModalOpen(true);
   };
-  
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedReview(null);
   };
 
   return (
-    <div>
-      <h2 className="text-3xl font-bold text-blue-600 mb-6">Moderation Dashboard</h2>
+    <>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Moderation Dashboard</h2>
       <div className="space-y-4">
         {reviews.map(review => (
-          <div key={review.id} className="flex flex-col sm:flex-row items-start sm:items-center bg-gray-100 p-4 rounded-lg shadow-sm justify-between transition-shadow duration-200 cursor-pointer hover:shadow-md" onClick={() => openModal(review)}>
+          <div key={review.id} className="flex flex-col sm:flex-row items-start sm:items-center bg-gray-50 p-4 border border-gray-200 justify-between transition-all duration-200 cursor-pointer hover:bg-gray-100" onClick={() => openModal(review)}>
             <div className="flex items-center space-x-4 mb-4 sm:mb-0">
-              {review.type === 'video' && <video src={review.url} controls className="w-24 h-auto rounded-lg" onClick={(e) => e.stopPropagation()} />}
-              {review.type === 'audio' && <audio src={review.url} controls className="w-24 h-auto rounded-lg" onClick={(e) => e.stopPropagation()} />}
+              {review.type === 'video' && <video src={review.dataUrl || review.url} controls className="w-24 h-auto object-cover" onClick={(e) => e.stopPropagation()} />}
+              {review.type === 'audio' && <audio src={review.dataUrl || review.url} controls className="w-24 h-auto object-cover" onClick={(e) => e.stopPropagation()} />}
               {review.type === 'text' && (
-                <div className="w-24 rounded-lg bg-gray-200 p-2 flex items-center h-24">
+                <div className="w-24 border border-gray-200 bg-white p-2 flex items-center h-24">
                   <p className="text-sm text-gray-500 overflow-hidden text-ellipsis line-clamp-3">
                     {review.content}
                   </p>
                 </div>
               )}
               <div className="flex-1">
-                <h3 className="font-semibold">{review.title}</h3>
-                <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                <h3 className="font-semibold text-gray-800">{review.title}</h3>
+                <span className={`text-sm font-medium px-2 py-1 tracking-wide ${
                   review.status === 'pending' ? 'bg-orange-100 text-orange-500' :
                   review.status === 'approved' ? 'bg-green-100 text-green-600' :
                   'bg-red-100 text-red-600'
                 }`}>
-                  {review.status}
+                  {review.status.toUpperCase()}
                 </span>
               </div>
             </div>
             <div className="flex space-x-2 mt-4 sm:mt-0" onClick={(e) => e.stopPropagation()}>
               {review.status === 'pending' && (
                 <>
-                  <button onClick={() => updateReview(review.id, 'approved')} className="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600">Approve</button>
-                  <button onClick={() => updateReview(review.id, 'rejected')} className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">Reject</button>
+                  <button onClick={() => updateReview(review.id, 'approved')} className="bg-green-600 text-white px-4 py-2 font-medium hover:bg-green-700 transition-colors">Approve</button>
+                  <button onClick={() => updateReview(review.id, 'rejected')} className="bg-red-600 text-white px-4 py-2 font-medium hover:bg-red-700 transition-colors">Reject</button>
                 </>
               )}
               {review.status !== 'pending' && (
-                <button onClick={() => updateReview(review.id, 'deleted')} className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600">
+                <button onClick={() => updateReview(review.id, 'deleted')} className="bg-red-600 text-white px-4 py-2 font-medium hover:bg-red-700 transition-colors">
                   <TrashIcon className="h-5 w-5" />
                 </button>
               )}
@@ -88,7 +88,7 @@ const Moderation = () => {
       {isModalOpen && selectedReview && (
         <ReviewPreviewModal review={selectedReview} onClose={closeModal} />
       )}
-    </div>
+    </>
   );
 };
 
