@@ -7,7 +7,7 @@ const Account = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   return (
-    <div className="max-w-md mx-auto bg-white p-8 border border-gray-200 text-center">
+    <div className="max-w-md mx-auto mt-10 mb-10 bg-white p-8 border border-gray-200 text-center">
       <h2 className="text-3xl font-bold text-gray-800 mb-6">My Account</h2>
       <div className="space-y-4 text-left">
         <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">

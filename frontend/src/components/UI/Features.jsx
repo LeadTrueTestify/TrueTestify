@@ -9,8 +9,8 @@ import {
 import FeatureCard from "./FeatureCard";
 
 const Features = () => (
-  <div className="p-8 bg-white border border-gray-200">
-    <h2 className="text-4xl font-extrabold text-gray-800 text-center mb-12">
+  <div className="p-8 bg-white border border-gray-200 mt-5">
+    <h2 className="text-5xl font-extrabold text-gray-800 text-center mb-12">
       Our Features
     </h2>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

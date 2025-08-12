@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "../Shared/Navbar";
-import FloatingReviewWidget from "../Dashboard/FloatingReviewWidget";
+// import FloatingReviewWidget from "../Dashboard/FloatingReviewWidget";
 
 const PublicLayout = () => {
   const location = useLocation();
@@ -9,7 +9,7 @@ const PublicLayout = () => {
     <div className="container mx-auto p-4 md:p-0">
       {/* <Navbar /> */}
       {/* <Outlet /> */}
-      {!isDashboard && <FloatingReviewWidget />}
+      {/* {!isDashboard && <FloatingReviewWidget />} */}
     </div>
   );
 };

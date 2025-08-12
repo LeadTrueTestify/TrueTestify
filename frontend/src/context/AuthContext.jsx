@@ -114,6 +114,18 @@ const AuthProvider = ({ children }) => {
     setUser(mockUser);
     toast.success(`Logged in as ${mockUser.role}.`);
   };
+  
+  const loginPlateForm = (role, email = null) => {
+    const mockUser = {
+      id: email || `${role}@truetestify.com`,
+      role: role,
+      businessName: role === 'admin' ? 'TrueTestify' : null,
+      publicReviewUrl: role === 'admin' ? 'truetestify' : null,
+    };
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    setUser(mockUser);
+    toast.success(`Logged in as ${mockUser.role}.`);
+  };
 
   // UPDATED: Now accepts a role, businessName, and publicReviewUrl
   const signup = (email, password, role, businessName, publicReviewUrl) => {
@@ -135,7 +147,7 @@ const AuthProvider = ({ children }) => {
     toast.success("Logged out successfully.");
   };
 
-  const value = { user, loading, login, signup, logout,getInitialData };
+  const value = { user, loading, login, signup, logout,getInitialData,loginPlateForm };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

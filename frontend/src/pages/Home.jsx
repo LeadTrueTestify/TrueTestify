@@ -18,7 +18,7 @@ const Home = () => {
   return (
     <div className="text-center">
       {/* Hero Section */}
-      <div className="bg-white p-16 border-b border-gray-200">
+      <div className="bg-gray-100 p-16 border-b border-gray-200">
         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">
           Capture Authentic Customer Testimonials.
         </h1>
@@ -43,8 +43,8 @@ const Home = () => {
       </div>
 
       {/* How It Works Section */}
-      <div className="p-16">
-        <h2 className="text-4xl font-extrabold text-gray-800 mb-12 tracking-tight">
+      <div className="p-16 bg-white border border-gray-200 mt-5">
+        <h2 className="text-5xl font-extrabold text-gray-800 mb-12 tracking-tight">
           How It Works
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -89,18 +89,18 @@ const Home = () => {
 
       {/* NEW: Featured Testimonials Section */}
       {featuredReviews.length > 0 && (
-        <div className="p-16 bg-gray-100 border-t border-gray-200">
-          <h2 className="text-4xl font-extrabold text-gray-800 mb-12 tracking-tight">
+        <div className="p-16 bg-gray-100 border-t border-gray-200 mt-5">
+          <h2 className="text-5xl font-extrabold text-gray-800 mb-15 tracking-tight">
             What Our Customers Say
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-9">
             {featuredReviews.map((review) => (
               <ReviewCard key={review.id} review={review} isPreview={true} />
             ))}
           </div>
           <div className="mt-12">
             <Link
-              to="/public-reviews/truetestify"
+              to="/testimonial"
               className="inline-block px-10 py-4 text-white bg-blue-600 font-bold tracking-wide transition-colors hover:bg-blue-700"
             >
               View All Testimonials

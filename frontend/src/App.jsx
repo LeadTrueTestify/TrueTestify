@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
-import { Link, Route, Router, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/16/solid";
 import Home from "./pages/Home";
 import RecordReview from "./pages/RecordReview";
 import PublicReviews from "./pages/PublicReviews";
@@ -24,15 +23,43 @@ import Contact from "./components/Shared/Contact";
 import NotFound from "./components/Shared/NotFound";
 import { AuthContext } from "./context/AuthContext";
 import Account from "./components/Shared/Account";
-import { ArrowLeftOnRectangleIcon } from "@heroicons/react/20/solid";
 import Navbar from "./components/Shared/Navbar";
 import Integrations from "./components/Shared/Integrations";
 import Support from "./components/Shared/Support";
 import TermsOfService from "./components/Shared/TermsOfService";
 import PrivacyPolicy from "./components/Shared/PrivacyPolicy";
 import Blog from "./components/Shared/Blog";
+import Testimonial from "./pages/Testimonial";
+import { MoonIcon, SunIcon } from "@heroicons/react/16/solid";
 
 function App() {
+    const {getInitialData} = useContext(AuthContext);
+  const [widgetConfig, setWidgetConfig] = useState(getInitialData('widgetConfig', {
+    layout: 'carousel',
+    theme: 'light',
+    autoplay: true,
+    accentColor: '#ef7c00', // TrueTestify orange
+  }));
+
+  const handleConfigChange = (key, value) => {
+    const newConfig = { ...widgetConfig, [key]: value };
+    localStorage.setItem('widgetConfig', JSON.stringify(newConfig));
+    setWidgetConfig(newConfig);
+    toast.success('Widget settings updated!');
+  };
+
+  const layouts = [
+    { name: 'Carousel', value: 'carousel' },
+    { name: 'Grid', value: 'grid' },
+    { name: 'Wall', value: 'wall' },
+    { name: 'Spotlight', value: 'spotlight' },
+  ];
+
+  const themes = [
+    { name: 'Light', value: 'light', icon: <SunIcon className="h-5 w-5" /> },
+    { name: 'Dark', value: 'dark', icon: <MoonIcon className="h-5 w-5" /> },
+  ];
+
   const { user } = useContext(AuthContext);
   return (
     <>
@@ -44,16 +71,18 @@ function App() {
         {/* The main content area with a max-width and padding */}
         <main
           className={`flex-1 w-full ${
-            user ? "" : "max-w-7xl mx-auto p-4 mt-24 pb-32"
+            user ? "" : "max-w-7xl mx-auto p-4 mt-5 pb-32"
           }`}
         >
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/pricing" element={<Pricing />} />
+             <Route path="/testimonial" element={<Testimonial />} />
             <Route
               path="/public-reviews/:businessName"
-              element={<PublicReviews />}
+              element={<PublicReviews isPreview={true} layout={widgetConfig.layout} />}
             />
+            
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route

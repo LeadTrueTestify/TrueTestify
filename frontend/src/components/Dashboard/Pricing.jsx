@@ -24,8 +24,8 @@ const Pricing = () => {
   ];
 
   return (
-    <div className="p-8 my-2 bg-white shadow-sm border border-gray-200">
-      <h2 className="text-4xl font-extrabold text-gray-800 mb-2 text-center">Simple & Transparent Pricing</h2>
+    <div className="p-8 mt-5 bg-gray-100 shadow-sm border border-gray-200">
+      <h2 className="text-5xl font-extrabold text-gray-800 mb-2 text-center">Simple & Transparent Pricing</h2>
       <p className="text-center text-lg text-gray-600 mb-12">Choose the plan that's right for your business.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {pricingPlans.map((plan, index) => (
