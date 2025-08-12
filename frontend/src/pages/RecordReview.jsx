@@ -18,6 +18,7 @@ const RecordReview = () => {
   const [mediaType, setMediaType] = useState("video"); // 'video', 'audio', 'text'
   const [isRecording, setIsRecording] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
+  const [title, setTitle] = useState("");
   const [textReview, setTextReview] = useState("");
   const [allowTextReviews, setAllowTextReviews] = useState(
     getInitialData("allowTextReviews", false)
@@ -139,7 +140,7 @@ const RecordReview = () => {
       id: Date.now(),
       type: mediaType,
       title:
-        mediaType === "text" ? "New Text Review" : `New ${mediaType} Review`,
+        mediaType === "text" ? {title} : `${title}`,
       status: "pending",
       url: mediaFile ? URL.createObjectURL(mediaFile) : null,
       content: mediaType === "text" ? textReview : null,
@@ -218,6 +219,19 @@ const RecordReview = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Tilte
+          </label>
+          <input
+            type="text"
+            value={title}
+            placeholder="Title"
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+            required
+          />
+        </div>
         {mediaType === "text" ? (
           <div>
             <label

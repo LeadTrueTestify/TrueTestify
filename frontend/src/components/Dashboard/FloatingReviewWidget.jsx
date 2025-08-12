@@ -3,6 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { AnimatePresence,motion } from "framer-motion";
 import { ChatBubbleBottomCenterTextIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import { MOCK_REVIEWS } from "../../assets/mockData";
+import { useLocation } from "react-router-dom";
 
 // const FloatingReviewWidget = () => {
 //   const { getInitialData} = useContext(AuthContext);
@@ -95,6 +96,8 @@ import { MOCK_REVIEWS } from "../../assets/mockData";
 // };
 
 const FloatingReviewWidget = () => {
+    const location = useLocation();
+  const isDashboard = location.pathname.startsWith("/dashboard");
   const {getInitialData} = useContext(AuthContext)
   const [isOpen, setIsOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -118,7 +121,7 @@ const FloatingReviewWidget = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setIsOpen(false);
+        // setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -130,7 +133,7 @@ const FloatingReviewWidget = () => {
   const toggleModal = () => setIsOpen(!isOpen);
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className={`fixed bottom-8 right-8 z-50`}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
