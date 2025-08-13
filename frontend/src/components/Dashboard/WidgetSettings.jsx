@@ -1,8 +1,9 @@
 import { ArrowUpOnSquareStackIcon, MoonIcon, PuzzlePieceIcon, SunIcon } from "@heroicons/react/16/solid";
+import QRCode from "qrcode";
 import PublicReviews from "../../pages/PublicReviews";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 const WidgetSettings = () => {
   const {getInitialData} = useContext(AuthContext);
@@ -20,11 +21,13 @@ const WidgetSettings = () => {
     toast.success('Widget settings updated!');
   };
 
+  const { hasFeature } = useContext(AuthContext);
+
   const layouts = [
-    { name: 'Carousel', value: 'carousel' },
-    { name: 'Grid', value: 'grid' },
-    { name: 'Wall', value: 'wall' },
-    { name: 'Spotlight', value: 'spotlight' },
+    { name: 'Carousel', value: 'carousel', feature: 'layout_carousel' },
+    { name: 'Grid', value: 'grid', feature: 'layout_grid' },
+    { name: 'Wall', value: 'wall', feature: 'layout_wall' },
+    { name: 'Spotlight', value: 'spotlight', feature: 'layout_spotlight' },
   ];
 
   const themes = [
@@ -36,12 +39,44 @@ const WidgetSettings = () => {
 
   const shortcode = `[truetestify_widget layout="${widgetConfig.layout}" theme="${widgetConfig.theme}"]`;
 
+  const publicReviewBaseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const businessSlug = user?.publicReviewUrl || "your-business";
+  const publicRecordUrl = `${publicReviewBaseUrl}/record/${businessSlug}`;
+
+  const [qrDataUrl, setQrDataUrl] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const dataUrl = await QRCode.toDataURL(publicRecordUrl, { margin: 1, width: 256 });
+        if (isMounted) setQrDataUrl(dataUrl);
+      } catch (_) {
+        // no-op; download will surface toast on failure
+      }
+    })();
+    return () => { isMounted = false; };
+  }, [publicRecordUrl]);
+
+  const handleDownloadQr = async () => {
+    try {
+      const dataUrl = qrDataUrl || await QRCode.toDataURL(publicRecordUrl, { margin: 1, width: 512 });
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `truetestify-record-${businessSlug}.png`;
+      link.click();
+      toast.success('QR code downloaded.');
+    } catch (e) {
+      toast.error('Failed to generate QR code');
+    }
+  };
+
   return (
     <div>
       <h2 className="text-3xl font-bold text-gray-800 mb-6">Widgets & Embeds</h2>
-      <div className="bg-white p-6 shadow-sm border border-gray-200">
+      <div className="bg-white p-4 sm:p-6 shadow-sm border border-gray-200">
         {/* Mock Account Connection */}
-        <div className="flex items-center justify-between p-4 mb-6 bg-green-50 text-green-800 border-l-4 border-green-500">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 mb-6 bg-green-50 text-green-800 border-l-4 border-green-500">
           <p className="font-semibold flex items-center">
             <PuzzlePieceIcon className="h-6 w-6 mr-2" />
             Connected to TrueTestify account: <span className="ml-2 font-bold">{user?.id}</span>
@@ -54,17 +89,18 @@ const WidgetSettings = () => {
           Customize the appearance and behavior of your testimonial widget.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Widget Layout</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {layouts.map(layout => (
                 <button
                   key={layout.value}
-                  onClick={() => handleConfigChange('layout', layout.value)}
+                  onClick={() => hasFeature(layout.feature) && handleConfigChange('layout', layout.value)}
+                  disabled={!hasFeature(layout.feature)}
                   className={`px-4 py-3 font-semibold text-sm transition-colors border ${
                     widgetConfig.layout === layout.value ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
-                  }`}
+                  } ${!hasFeature(layout.feature) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {layout.name}
                 </button>
@@ -127,12 +163,64 @@ const WidgetSettings = () => {
           </button>
         </div>
 
-        <div className="text-center mt-8 p-6 bg-gray-50 border border-gray-200">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border border-gray-300 p-3 sm:p-4">
+            <p className="text-sm text-gray-500 mb-2">JavaScript Embed</p>
+            <pre className="text-xs bg-gray-50 p-3 overflow-x-auto">{`<script src="https://cdn.truetestify.com/widget.js" data-layout="${widgetConfig.layout}" data-theme="${widgetConfig.theme}" data-business="${businessSlug}"></script>`}</pre>
+          </div>
+          <div className="border border-gray-300 p-3 sm:p-4">
+            <p className="text-sm text-gray-500 mb-2">Iframe Embed</p>
+            <pre className="text-xs bg-gray-50 p-3 overflow-x-auto">{`<iframe src="${publicReviewBaseUrl}/public-reviews/${businessSlug}" style="width:100%;height:420px;border:0;" loading="lazy"></iframe>`}</pre>
+          </div>
+        </div>
+
+        <div className="text-center mt-8 p-4 sm:p-6 bg-gray-50 border border-gray-200">
           <h4 className="text-xl font-bold text-gray-800 mb-4">Live Preview</h4>
-          <div className="border border-gray-300 p-4">
+          <div className="border border-gray-300 p-3 sm:p-4">
             <p className="text-sm text-gray-500 mb-2">This is a live preview of how your widget would look with the current settings.</p>
             <PublicReviews isPreview={true} layout={widgetConfig.layout} />
+            {!hasFeature('widget_embed') && (
+              <p className="mt-4 text-sm text-red-500">Widget embedding is not available on your current plan.</p>
+            )}
           </div>
+        </div>
+
+        <div className="mt-8 p-4 sm:p-6 bg-white border border-gray-200">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">WordPress & Shopify</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+            <div className="border border-gray-200 p-3 sm:p-4">
+              <h4 className="font-semibold mb-2">WordPress Plugin</h4>
+              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                <li>Install “TrueTestify – Testimonials”</li>
+                <li>Connect your account</li>
+                <li>Use shortcode: <code className="bg-gray-100 px-1">[truetestify_widget type="{widgetConfig.layout}"]</code></li>
+              </ul>
+              <a href="https://truetestify.com" target="_blank" className="inline-block mt-3 text-orange-600 hover:underline">Open Dashboard</a>
+            </div>
+            <div className="border border-gray-200 p-3 sm:p-4">
+              <h4 className="font-semibold mb-2">Shopify App</h4>
+              <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                <li>Install “TrueTestify – Video Testimonials”</li>
+                <li>Connect your store</li>
+                <li>Choose placement: Home, Product, Floating</li>
+              </ul>
+              <a href="https://truetestify.com" target="_blank" className="inline-block mt-3 text-orange-600 hover:underline">Open Dashboard</a>
+            </div>
+          </div>
+        </div>
+
+        <h3 className="text-2xl font-bold text-gray-800 mt-8 mb-4">3. Offline Collection QR</h3>
+        <p className="text-gray-600 mb-4">
+          Print this QR on packaging, receipts, or displays. Scanning redirects customers to your public review page where they can submit a review.
+        </p>
+        <div className="flex flex-col items-center gap-4 p-4 sm:p-6 bg-white border border-gray-200">
+          <p className="text-sm text-gray-600">Target URL: <span className="font-mono break-all">{publicRecordUrl}</span></p>
+          {qrDataUrl ? (
+            <img src={qrDataUrl} alt="Record review QR" className="w-48 h-48 border border-gray-200" />
+          ) : (
+            <div className="w-48 h-48 flex items-center justify-center border border-dashed border-gray-300 text-gray-400 text-sm">Generating…</div>
+          )}
+          <button onClick={handleDownloadQr} className="px-6 py-2 bg-orange-500 text-white font-semibold hover:bg-orange-600">Download QR Code</button>
         </div>
       </div>
     </div>

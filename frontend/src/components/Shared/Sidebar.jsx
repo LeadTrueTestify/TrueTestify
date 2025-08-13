@@ -18,7 +18,7 @@ const Sidebar = ({ setIsSidebarOpen }) => {
   const { logout, user } = useContext(AuthContext);
 
   return (
-    <div className="w-64 bg-slate-800 text-white p-4 flex flex-col shadow-xl">
+    <div className="w-64 bg-slate-800 text-white p-4 flex flex-col shadow-xl h-full">
       <div className="flex justify-between items-center mb-8">
         <Link
           to="/dashboard"
@@ -63,7 +63,7 @@ const Sidebar = ({ setIsSidebarOpen }) => {
           </li>
           <li className="mb-2">
             <NavLink
-              to="/dashboard/manage-subscription"
+              to="/dashboard/billing"
               icon={<CreditCardIcon className="h-5 w-5" />}
               label="Billing"
               onClick={() => setIsSidebarOpen(false)}
@@ -82,7 +82,7 @@ const Sidebar = ({ setIsSidebarOpen }) => {
               <NavLink
                 icon={<ArrowRightEndOnRectangleIcon className="h-5 w-5" />}
                 label="Logout"
-                onClick={logout}
+                onClick={() => { logout(); setIsSidebarOpen(false); }}
               />
             </>
           ) : (

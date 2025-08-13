@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <footer className="w-full bg-gray-900 text-white py-12 border-t border-gray-800 z-30">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-center md:text-left">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 mb-8 text-left">
           <div>
             <h3 className="text-2xl font-extrabold text-white tracking-tight mb-4">TrueTestify</h3>
             <p className="text-sm text-gray-400">

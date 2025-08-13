@@ -4,17 +4,20 @@ import { AuthContext } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 
 const AdminProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, subscription } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
       toast.error("You do not have permission to view this page.");
       navigate('/');
+    } else if (!loading && user?.role === 'admin' && subscription?.status !== 'active') {
+      toast.error('Activate a subscription to access the dashboard.');
+      navigate('/billing');
     }
   }, [user, loading, navigate]);
 
-  return loading || !user || user.role !== 'admin' ? (
+  return loading || !user || user.role !== 'admin' || subscription?.status !== 'active' ? (
     <div className="flex justify-center items-center h-screen">
       <p className="text-xl text-gray-500">Loading...</p>
     </div>

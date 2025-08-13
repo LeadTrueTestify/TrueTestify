@@ -11,13 +11,13 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 const Analytics = () => {
-  const { getInitialData } = useContext(AuthContext);
+  const { getInitialData, hasFeature } = useContext(AuthContext);
   const reviews = getInitialData("reviews", MOCK_REVIEWS);
   const data = {
     videosCollected: reviews.filter((r) => r.type === "video").length,
     audioCollected: reviews.filter((r) => r.type === "audio").length,
     textCollected: reviews.filter((r) => r.type === "text").length,
-    widgetViews: 1542, // Static mock data
+    widgetViews: Number(localStorage.getItem('widgetViews') || '0'),
     storageUsed: 3.5, // GB, static mock data
     storageLimit: 10, // GB, static mock data
   };
@@ -44,12 +44,14 @@ const Analytics = () => {
           icon={<DocumentTextIcon />}
           color="blue"
         />
-        <AnalyticsCard
-          title="Widget Views"
-          value={data.widgetViews}
-          icon={<ChartBarIcon />}
-          color="orange"
-        />
+        {hasFeature('analytics') && (
+          <AnalyticsCard
+            title="Widget Views"
+            value={data.widgetViews}
+            icon={<ChartBarIcon />}
+            color="orange"
+          />
+        )}
         <AnalyticsCard
           title="Storage Remaining"
           value={`${data.storageLimit - data.storageUsed} GB`}
