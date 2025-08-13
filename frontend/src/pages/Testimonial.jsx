@@ -19,16 +19,16 @@ const Testimonial = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const approvedReviews = reviews.filter((r) => r.status);
+  const approvedReviews = reviews.filter((r) => r.status === 'approved');
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-lg mt-2">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6 bg-white rounded-lg shadow-lg mt-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
         {/* UPDATED: Display the businessName from the URL */}
         <h2 className="text-4xl font-bold text-blue-600">
            Customer Testimonials
         </h2>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setLayout("grid")}
             className={`px-4 py-2  font-semibold ${
@@ -81,7 +81,7 @@ const Testimonial = () => {
         </div>
       )}
       {layout === "carousel" && (
-        <div className="overflow-x-scroll flex space-x-6 pb-4">
+        <div className="overflow-x-auto flex space-x-6 pb-4">
           {approvedReviews.map((review) => (
             <div key={review.id} className="min-w-[300px] max-w-[300px]">
               <ReviewCard review={review} />
@@ -109,7 +109,7 @@ const Testimonial = () => {
 
       <div className="text-center mt-8">
         <Link
-          to="/record"
+          to={`/record/${(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).publicReviewUrl : 'your-business') || 'your-business'}`}
           className="inline-block px-6 py-3 bg-orange-500 text-white font-bold  hover:bg-orange-600 transition-colors"
         >
           Leave Your Own Review!

@@ -1,4 +1,11 @@
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
+
 const Pricing = () => {
+  const navigate = useNavigate();
+  const { selectPlan, subscription } = useContext(AuthContext);
+
   const pricingPlans = [
     {
       name: 'Starter',
@@ -23,15 +30,37 @@ const Pricing = () => {
     },
   ];
 
+  const handleChoose = (plan) => {
+    selectPlan(plan.name);
+    navigate('/billing');
+  };
+
   return (
     <div className="p-8 mt-5 bg-gray-100 shadow-sm border border-gray-200">
       <h2 className="text-5xl font-extrabold text-gray-800 mb-2 text-center">Simple & Transparent Pricing</h2>
       <p className="text-center text-lg text-gray-600 mb-12">Choose the plan that's right for your business.</p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {pricingPlans.map((plan, index) => (
-          <div key={index} className={`bg-gray-50 p-8 border ${plan.isRecommended ? 'border-orange-500 transform scale-105 shadow-xl' : 'border-gray-200 shadow-sm'} transition-transform duration-300`}>
+          <div
+            key={index}
+            role="button"
+            tabIndex={0}
+            onClick={() => handleChoose(plan)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleChoose(plan); }}
+            aria-selected={subscription?.plan === plan.name}
+            className={`relative bg-gray-50 p-8 border ${
+              subscription?.plan === plan.name
+                ? 'ring-2 ring-orange-500 border-orange-500'
+                : plan.isRecommended
+                  ? 'border-orange-500'
+                  : 'border-gray-200'
+            } shadow-sm transition transform duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-orange-400`}
+          >
+            {subscription?.plan === plan.name && (
+              <span className="absolute top-3 right-3 text-xs font-bold text-white bg-orange-500 px-2 py-1">SELECTED</span>
+            )}
             {plan.isRecommended && (
-              <span className="inline-block px-3 py-1 text-xs font-bold text-white bg-orange-500 tracking-wider mb-4">
+              <span className="inline-block px-3 py-1 rounded-e-3xl text-xs font-bold text-white bg-orange-500 tracking-wider mb-4">
                 RECOMMENDED
               </span>
             )}
@@ -52,8 +81,18 @@ const Pricing = () => {
                 ))}
               </ul>
             </div>
-            <button className={`mt-8 w-full px-8 py-3 font-bold tracking-wide transition-colors ${plan.isRecommended ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'}`}>
-              {plan.price === 'Contact Us' ? 'Contact Sales' : 'Get Started'}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleChoose(plan); }}
+              disabled={subscription?.plan === plan.name}
+              className={`mt-8 w-full px-8 py-3 font-bold tracking-wide transition-colors ${
+                subscription?.plan === plan.name
+                  ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                  : plan.isRecommended
+                    ? 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+              }`}
+            >
+              {plan.price === 'Contact Us' ? 'Contact Sales' : (subscription?.plan === plan.name ? 'Selected' : 'Get Started')}
             </button>
           </div>
         ))}

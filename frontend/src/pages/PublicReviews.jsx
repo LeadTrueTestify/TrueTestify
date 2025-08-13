@@ -21,12 +21,33 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  useEffect(() => {
+    if (!isPreview) {
+      const current = Number(localStorage.getItem('widgetViews') || '0');
+      localStorage.setItem('widgetViews', String(current + 1));
+    }
+  }, [isPreview]);
+
   const approvedReviews = reviews.filter(
     (r) => r.status === "approved" && r.publicReviewUrl === businessName
   );
 
+  const brandLogoUrl = localStorage.getItem('brandLogoUrl') ? JSON.parse(localStorage.getItem('brandLogoUrl')) : null;
+  const brandPrimaryColor = localStorage.getItem('brandPrimaryColor') ? JSON.parse(localStorage.getItem('brandPrimaryColor')) : null;
+
   return (
     <div className="p-8 bg-white shadow-sm border border-gray-200">
+      {brandLogoUrl && (
+        <div className="flex items-center justify-between mb-6 border-b pb-4" style={{ borderColor: '#e5e7eb' }}>
+          <div className="flex items-center gap-3">
+            <img src={brandLogoUrl} alt="Brand Logo" className="h-10 w-10 object-contain" />
+            <h3 className="text-2xl font-bold" style={{ color: brandPrimaryColor || '#111827' }}>{businessName}</h3>
+          </div>
+          {!isPreview && (
+            <Link to={`/record/${businessName}`} className="px-4 py-2 bg-orange-500 text-white font-semibold hover:bg-orange-600">Leave a Review</Link>
+          )}
+        </div>
+      )}
       {approvedReviews.length > 0 ? (
         <>
           {initialLayout === "grid" && (

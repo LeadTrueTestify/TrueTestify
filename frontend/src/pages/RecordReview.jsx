@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useRef, useState } from "react";
 import {
   DocumentTextIcon,
@@ -13,8 +13,11 @@ import { MOCK_REVIEWS } from "../assets/mockData";
 //  RecordReview.jsx
 const RecordReview = () => {
   const { getInitialData, user } = useContext(AuthContext);
-  const businessName = user.publicReviewUrl;
+  const { businessName: paramBusinessName } = useParams();
+  const businessName = user?.publicReviewUrl || paramBusinessName;
+  const MAX_DURATION_SECONDS = 60;
   const [hasConsented, setHasConsented] = useState(false);
+  const requireConsent = JSON.parse(localStorage.getItem('showConsent') || 'true');
   const [mediaType, setMediaType] = useState("video"); // 'video', 'audio', 'text'
   const [isRecording, setIsRecording] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
@@ -29,9 +32,19 @@ const RecordReview = () => {
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [stream, setStream] = useState(null);
   const [mediaChunks, setMediaChunks] = useState([]);
+  const recordTimeoutRef = useRef(null);
+  const recordStartAtRef = useRef(null);
+  const timerIntervalRef = useRef(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // Ref for the video preview element
   const videoRef = useRef(null);
+  // Audio waveform refs
+  const audioCanvasRef = useRef(null);
+  const audioAnalyserRef = useRef(null);
+  const audioAnimationRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const [mediaDurationSec, setMediaDurationSec] = useState(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -40,6 +53,77 @@ const RecordReview = () => {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
+
+  const cleanupActiveMedia = () => {
+    try {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    } catch (_) {}
+    if (recordTimeoutRef.current) {
+      clearTimeout(recordTimeoutRef.current);
+      recordTimeoutRef.current = null;
+    }
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    if (audioAnimationRef.current) {
+      cancelAnimationFrame(audioAnimationRef.current);
+      audioAnimationRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch (_) {}
+      audioCtxRef.current = null;
+    }
+    if (stream) {
+      try { stream.getTracks().forEach(t => t.stop()); } catch (_) {}
+    }
+    if (videoRef.current) {
+      try { videoRef.current.srcObject = null; } catch (_) {}
+    }
+    setStream(null);
+    setMediaRecorder(null);
+    setIsRecording(false);
+    setMediaChunks([]);
+    setElapsedSeconds(0);
+  };
+
+  const handleMediaTypeChange = (next) => {
+    if (mediaType === next) return;
+    cleanupActiveMedia();
+    setMediaType(next);
+  };
+
+  // Ensure live camera stream is bound after the preview element mounts
+  useEffect(() => {
+    if (mediaType === 'video' && stream && videoRef.current) {
+      try {
+        videoRef.current.srcObject = stream;
+        const playPromise = videoRef.current.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise.catch(() => {});
+        }
+      } catch (_) {}
+    }
+  }, [stream, mediaType]);
+
+  // Compute duration of recorded/uploaded media for preview
+  useEffect(() => {
+    (async () => {
+      if (mediaFile) {
+        try {
+          const d = await getMediaDuration(mediaFile);
+          if (isFinite(d)) setMediaDurationSec(Math.round(d));
+          else setMediaDurationSec(null);
+        } catch (e) {
+          setMediaDurationSec(null);
+        }
+      } else {
+        setMediaDurationSec(null);
+      }
+    })();
+  }, [mediaFile]);
 
   // Use a useEffect hook to handle the final recorded file after chunks are collected
   useEffect(() => {
@@ -103,6 +187,40 @@ const RecordReview = () => {
       setMediaRecorder(recorder);
       setIsRecording(true);
       toast.success(`Recording started! Click stop when you're done.`);
+
+      // Auto-stop at 60 seconds
+      if (recordTimeoutRef.current) clearTimeout(recordTimeoutRef.current);
+      recordTimeoutRef.current = setTimeout(() => {
+        if (recorder && recorder.state !== 'inactive') {
+          recorder.stop();
+          toast.error(`Maximum ${MAX_DURATION_SECONDS}s reached. Recording stopped.`);
+        }
+      }, MAX_DURATION_SECONDS * 1000);
+
+      // Start elapsed timer
+      recordStartAtRef.current = Date.now();
+      setElapsedSeconds(0);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = setInterval(() => {
+        setElapsedSeconds(Math.min(MAX_DURATION_SECONDS, Math.floor((Date.now() - recordStartAtRef.current) / 1000)));
+      }, 200);
+
+      // If audio, initialize analyser; actual drawing starts once canvas mounts
+      if (mediaType === 'audio') {
+        try {
+          const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          await audioCtx.resume();
+          audioCtxRef.current = audioCtx;
+          const source = audioCtx.createMediaStreamSource(mediaStream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 1024;
+          analyser.smoothingTimeConstant = 0.85;
+          source.connect(analyser);
+          audioAnalyserRef.current = analyser;
+        } catch (e) {
+          // ignore waveform errors
+        }
+      }
     } catch (err) {
       console.error("Recording error:", err);
       toast.error(`Error starting recording: ${err.message}`);
@@ -114,6 +232,28 @@ const RecordReview = () => {
       mediaRecorder.stop();
       toast.success("Review ready to submit!");
     }
+    if (recordTimeoutRef.current) {
+      clearTimeout(recordTimeoutRef.current);
+      recordTimeoutRef.current = null;
+    }
+    // Immediately turn off camera/mic streams
+    if (stream) {
+      try {
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (_) {}
+    }
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    if (audioAnimationRef.current) {
+      cancelAnimationFrame(audioAnimationRef.current);
+      audioAnimationRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try { audioCtxRef.current.close(); } catch (_) {}
+      audioCtxRef.current = null;
+    }
     setStream(null);
     setMediaRecorder(null);
     setIsRecording(false);
@@ -121,7 +261,7 @@ const RecordReview = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!hasConsented) {
+    if (requireConsent && !hasConsented) {
       toast.error("Please agree to the terms before submitting.");
       return;
     }
@@ -139,11 +279,11 @@ const RecordReview = () => {
     const newReview = {
       id: Date.now(),
       type: mediaType,
-      title:
-        mediaType === "text" ? {title} : `${title}`,
+      title: title,
       status: "pending",
       url: mediaFile ? URL.createObjectURL(mediaFile) : null,
       content: mediaType === "text" ? textReview : null,
+      publicReviewUrl: businessName || null,
     };
 
     const allReviews = getInitialData("reviews", MOCK_REVIEWS);
@@ -159,11 +299,42 @@ const RecordReview = () => {
     setTimeout(() => navigate("/"), 2000);
   };
 
-  const handleFileUpload = (e) => {
+  const getMediaDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const element = document.createElement(file.type.startsWith('audio') ? 'audio' : 'video');
+      element.preload = 'metadata';
+      element.src = url;
+      element.onloadedmetadata = () => {
+        const duration = element.duration;
+        URL.revokeObjectURL(url);
+        if (isNaN(duration) || !isFinite(duration)) {
+          resolve(duration);
+        } else {
+          resolve(duration);
+        }
+      };
+      element.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load media metadata'));
+      };
+    });
+  };
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setMediaFile(file);
-      setMediaType(file.type.startsWith("video") ? "video" : "audio");
+      try {
+        const duration = await getMediaDuration(file);
+        if (isFinite(duration) && duration > MAX_DURATION_SECONDS) {
+          toast.error(`Media exceeds ${MAX_DURATION_SECONDS}s. Please upload a shorter file.`);
+          return;
+        }
+        setMediaFile(file);
+        setMediaType(file.type.startsWith("video") ? "video" : "audio");
+      } catch (err) {
+        toast.error('Could not read media duration. Please try a different file.');
+      }
     }
   };
 
@@ -179,13 +350,19 @@ const RecordReview = () => {
     e.preventDefault();
   };
 
+  const formatTime = (s) => {
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(Math.floor(s % 60)).padStart(2, '0');
+    return `${mm}:${ss}`;
+  };
+
   return (
-    <div className="p-4 mt-2 bg-white rounded-lg shadow-lg max-w-2xl mx-auto">
+    <div className="p-4 mt-2 bg-white rounded-lg shadow-lg max-w-2xl mx-auto w-full">
       <h2 className="text-3xl font-bold text-blue-600 mb-4">Leave a Review</h2>
 
       <div className="mb-6 flex justify-center space-x-2 p-2 bg-gray-100 rounded-lg">
         <button
-          onClick={() => setMediaType("video")}
+          onClick={() => handleMediaTypeChange("video")}
           className={`flex-1 flex justify-center items-center px-4 py-2 rounded-full font-semibold transition-colors ${
             mediaType === "video"
               ? "bg-orange-500 text-white"
@@ -195,7 +372,7 @@ const RecordReview = () => {
           <VideoCameraIcon className="h-5 w-5 mr-2" /> Video
         </button>
         <button
-          onClick={() => setMediaType("audio")}
+          onClick={() => handleMediaTypeChange("audio")}
           className={`flex-1 flex justify-center items-center px-4 py-2 rounded-full font-semibold transition-colors ${
             mediaType === "audio"
               ? "bg-orange-500 text-white"
@@ -206,7 +383,7 @@ const RecordReview = () => {
         </button>
         {allowTextReviews && (
           <button
-            onClick={() => setMediaType("text")}
+            onClick={() => handleMediaTypeChange("text")}
             className={`flex-1 flex justify-center items-center px-4 py-2 rounded-full font-semibold transition-colors ${
               mediaType === "text"
                 ? "bg-orange-500 text-white"
@@ -255,33 +432,77 @@ const RecordReview = () => {
               Record or Upload {mediaType}
             </label>
             <div
-              className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
+              className="mt-1 flex justify-center px-4 sm:px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md"
               onDrop={handleDrop}
               onDragOver={handleDragOver}
             >
               <div className="space-y-1 text-center">
                 {isRecording && mediaType === "video" && (
-                  <div className="w-full rounded-lg overflow-hidden flex flex-col items-center justify-center p-8 bg-gray-200">
-                    <VideoCameraIcon className="h-35 w-35 text-gray-400 animate-pulse" />
-                    <p className="text-xl font-bold text-gray-600 mt-2">
-                      Recording...
-                    </p>
+                  <div className="w-full rounded-lg overflow-hidden flex flex-col items-center justify-center bg-black relative">
+                    <video ref={videoRef} autoPlay muted playsInline className="w-full max-h-64 object-contain" />
+                    <div className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded">REC</div>
+                    <div className="absolute bottom-2 right-2 bg-gray-900/70 text-white text-xs px-2 py-1 rounded">{formatTime(elapsedSeconds)} / {formatTime(MAX_DURATION_SECONDS)}</div>
+                  </div>
+                )}
+                {isRecording && mediaType === 'audio' && (
+                  <div className="w-full rounded-lg overflow-hidden flex flex-col items-center justify-center p-4 bg-gray-100">
+                    <canvas
+                      ref={(el) => {
+                        audioCanvasRef.current = el;
+                        if (!el || !audioAnalyserRef.current) return;
+                        const canvas = el;
+                        const ctx = canvas.getContext('2d');
+                        const analyser = audioAnalyserRef.current;
+                        const bufferLength = analyser.frequencyBinCount;
+                        const dataArray = new Uint8Array(bufferLength);
+                        const draw = () => {
+                          audioAnimationRef.current = requestAnimationFrame(draw);
+                          analyser.getByteFrequencyData(dataArray);
+                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                          const barWidth = 3; // slim bars like WhatsApp
+                          const gap = 2;
+                          const totalBars = Math.floor(canvas.width / (barWidth + gap));
+                          const step = Math.floor(bufferLength / totalBars);
+                          let x = 0;
+                          for (let i = 0; i < totalBars; i++) {
+                            const v = dataArray[i * step] / 255; // 0..1
+                            const barHeight = Math.max(2, v * canvas.height);
+                            const y = (canvas.height - barHeight) / 2;
+                            ctx.fillStyle = '#ef7c00';
+                            ctx.fillRect(x, y, barWidth, barHeight);
+                            x += barWidth + gap;
+                          }
+                        };
+                        draw();
+                      }}
+                      width="600"
+                      height="64"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-600 mt-2">{formatTime(elapsedSeconds)} / {formatTime(MAX_DURATION_SECONDS)}</p>
                   </div>
                 )}
                 {mediaFile ? (
                   <>
-                    {mediaType === "video" ? (
-                      <video
-                        src={URL.createObjectURL(mediaFile)}
-                        controls
-                        className="h-half w-auto mx-auto rounded-md"
-                      />
-                    ) : (
-                      <audio
-                        src={URL.createObjectURL(mediaFile)}
-                        controls
-                        className="w-full mx-auto"
-                      />
+                    {mediaType === "video" && (
+                      <video src={URL.createObjectURL(mediaFile)} controls className="w-full max-h-64 mx-auto rounded-md bg-black aspect-video object-contain" />
+                    )}
+                    {mediaType === "audio" && (
+                      <div className="w-full mx-auto bg-white border border-gray-200 p-3 rounded-md">
+                        <div className="bg-gray-50 border border-dashed border-gray-300 rounded p-3">
+                          <audio
+                            src={URL.createObjectURL(mediaFile)}
+                            controls
+                            className="w-full"
+                          />
+                        </div>
+                        {mediaDurationSec != null && (
+                          <p className="text-xs text-gray-500 mt-1">Duration: {formatTime(mediaDurationSec)}</p>
+                        )}
+                      </div>
+                    )}
+                    {mediaDurationSec != null && (
+                      <p className="text-xs text-gray-500 mt-1">Duration: {formatTime(mediaDurationSec)}</p>
                     )}
                     <p className="text-sm text-gray-500 mt-2">
                       {mediaFile.name}

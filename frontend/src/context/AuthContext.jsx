@@ -91,6 +91,12 @@ return initialValue;
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getInitialData('user', null));
   const [loading, setLoading] = useState(true);
+  const [subscription, setSubscription] = useState(getInitialData('subscription', {
+    plan: 'Starter',
+    status: 'inactive', // inactive | pending | active
+    startedAt: null,
+  }));
+  const [billingInfo, setBillingInfo] = useState(getInitialData('billingInfo', null));
 
   // Simulate a delay for "loading" and check for existing user
   useEffect(() => {
@@ -142,12 +148,43 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
+    try {
+      localStorage.clear();
+    } catch (_) {}
     setUser(null);
-    toast.success("Logged out successfully.");
+    setSubscription({ plan: 'Starter', status: 'inactive', startedAt: null });
+    setBillingInfo(null);
+    toast.success("Logged out and cleared local data.");
   };
 
-  const value = { user, loading, login, signup, logout,getInitialData,loginPlateForm };
+  const selectPlan = (planName) => {
+    const updated = { plan: planName, status: 'pending', startedAt: new Date().toISOString() };
+    localStorage.setItem('subscription', JSON.stringify(updated));
+    setSubscription(updated);
+    toast.success(`${planName} selected. Add billing to activate.`);
+  };
+
+  const saveBilling = (info) => {
+    localStorage.setItem('billingInfo', JSON.stringify(info));
+    setBillingInfo(info);
+    const updated = { ...subscription, status: 'active' };
+    localStorage.setItem('subscription', JSON.stringify(updated));
+    setSubscription(updated);
+    toast.success('Billing information saved. Subscription active.');
+  };
+
+  const planFeatures = {
+    Starter: new Set(['basic_moderation', 'widget_embed', 'layout_carousel']),
+    Pro: new Set(['basic_moderation', 'advanced_moderation', 'widget_embed', 'analytics', 'priority_support', 'layout_carousel', 'layout_grid', 'layout_wall', 'layout_spotlight']),
+    Enterprise: new Set(['basic_moderation', 'advanced_moderation', 'widget_embed', 'analytics', 'priority_support', 'api_access', 'layout_carousel', 'layout_grid', 'layout_wall', 'layout_spotlight'])
+  };
+
+  const hasFeature = (feature) => {
+    const plan = subscription?.plan || 'Starter';
+    return planFeatures[plan]?.has(feature) || false;
+  };
+
+  const value = { user, loading, login, signup, logout, getInitialData, loginPlateForm, subscription, billingInfo, selectPlan, saveBilling, hasFeature };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

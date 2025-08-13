@@ -22,7 +22,7 @@ const Features = () => (
       <FeatureCard
         title="Audio & Text Reviews"
         description="Offer multiple options for your customers to leave feedback, catering to their preferences and comfort levels."
-        icon={<MegaphoneIcon />}
+        icon={<MegaphoneIcon  />}
       />
       <FeatureCard
         title="Customizable Widgets"

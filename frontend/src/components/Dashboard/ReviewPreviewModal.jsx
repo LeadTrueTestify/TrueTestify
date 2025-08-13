@@ -6,7 +6,7 @@ const ReviewPreviewModal = ({ review, onClose }) => {
       <div className="relative bg-white border border-gray-200 shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-gray-200 z-50 bg-gray-800 p-2 cursor-pointer"
+          className="absolute top-4 rounded-3xl right-4 text-white hover:text-gray-200 z-50 bg-gray-800 p-2 cursor-pointer"
         >
           <XMarkIcon className="h-6 w-6" />
         </button>
