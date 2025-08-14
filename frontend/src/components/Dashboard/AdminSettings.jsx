@@ -1,17 +1,26 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import toast from "react-hot-toast";
-import Settings from "./Settings";
 
 const AdminSettings = () => {
   const { getInitialData, hasFeature } = useContext(AuthContext);
   const [allowTextReviews, setAllowTextReviews] = useState(getInitialData('allowTextReviews', false));
-
+  const [allowTextGoogleReviews, setAllowTextGoogleReviews] = useState(getInitialData('allowTextGoogleReviews', false));
+  console.log(hasFeature("advance"));
+  console.log(allowTextGoogleReviews);
+  
   const handleToggle = () => {
     const newSetting = !allowTextReviews;
     localStorage.setItem('allowTextReviews', JSON.stringify(newSetting));
     setAllowTextReviews(newSetting);
     toast.success(`Text reviews are now ${newSetting ? 'enabled' : 'disabled'}.`);
+  };
+
+  const handleToggleGoogleReviews = () => {
+    const newSetting = !allowTextGoogleReviews;
+    localStorage.setItem('allowTextGoogleReviews', JSON.stringify(newSetting));
+    setAllowTextGoogleReviews(newSetting);
+    toast.success(`Text Google reviews are now ${newSetting ? 'enabled' : 'disabled'}.`);
   };
 
   const [logoUrl, setLogoUrl] = useState(JSON.parse(localStorage.getItem('brandLogoUrl') || 'null'));
@@ -50,6 +59,29 @@ const AdminSettings = () => {
             aria-hidden="true"
             className={`pointer-events-none inline-block h-5 w-5 bg-white shadow transform ring-0 transition ease-in-out duration-200 ${
               allowTextReviews ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          ></span>
+        </button>
+      </div>
+
+      <div className="bg-white p-6 border border-gray-200 shadow-sm flex items-center mt-6 justify-between">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Enable Text Google Reviews</h3>
+          <p className="text-gray-600 max-w-md">
+            Allow users to submit a text-based Google review instead of just video and audio.
+          </p>
+        </div>
+        <button
+        disabled={!hasFeature("advanced_moderation")}
+          onClick={handleToggleGoogleReviews}
+          className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 ${
+            allowTextGoogleReviews ? 'bg-orange-500' : 'bg-gray-200'
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none inline-block h-5 w-5 bg-white shadow transform ring-0 transition ease-in-out duration-200 ${
+              allowTextGoogleReviews ? 'translate-x-5' : 'translate-x-0'
             }`}
           ></span>
         </button>

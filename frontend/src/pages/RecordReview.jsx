@@ -1,6 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useContext, useEffect, useRef, useState } from "react";
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   DocumentTextIcon,
   MicrophoneIcon,
   StopIcon,
@@ -26,6 +28,7 @@ const RecordReview = () => {
   const [allowTextReviews, setAllowTextReviews] = useState(
     getInitialData("allowTextReviews", false)
   );
+  const [allowTextGoogleReviews, setAllowTextGoogleReviews] = useState(getInitialData('allowTextGoogleReviews', false));
   const navigate = useNavigate();
 
   // State for MediaRecorder
@@ -50,8 +53,11 @@ const RecordReview = () => {
     const handleStorageChange = () => {
       setAllowTextReviews(getInitialData("allowTextReviews", false));
     };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    const handleReviewChange = () => {
+      setAllowTextGoogleReviews(getInitialData("allowTextGoogleReviews", false));
+    };
+    window.addEventListener("storage", handleStorageChange,handleReviewChange);
+    return () => window.removeEventListener("storage", handleStorageChange,handleReviewChange);
   }, []);
 
   const cleanupActiveMedia = () => {
@@ -358,8 +364,18 @@ const RecordReview = () => {
 
   return (
     <div className="p-4 mt-2 bg-white rounded-lg shadow-lg max-w-2xl mx-auto w-full">
-      <h2 className="text-3xl font-bold text-blue-600 mb-4">Leave a Review</h2>
+      {allowTextGoogleReviews && (
 
+        <button
+        onClick={() => navigate("/reviews/google-embed")}
+        className="font-semibold text-indigo-600 flex items-center cursor-pointer"
+        >
+            Go to Google Reviews <ArrowRightIcon className="w-5 h-5 mr-2" /> 
+          </button>
+          )}
+      <h2 className="text-3xl font-bold text-blue-600 mb-4">Leave a Review</h2>
+      <div className="flex justify-center mb-6">
+        </div>
       <div className="mb-6 flex justify-center space-x-2 p-2 bg-gray-100 rounded-lg">
         <button
           onClick={() => handleMediaTypeChange("video")}

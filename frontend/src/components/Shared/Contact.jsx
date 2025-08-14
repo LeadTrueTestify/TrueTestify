@@ -1,32 +1,129 @@
+import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/16/solid";
+import { Link } from "react-router-dom";
+
 const Contact = () => (
-  <div className="p-8 my-2 mt-5 bg-white border border-gray-200 max-w-2xl mx-auto">
-    <h2 className="text-5xl font-extrabold text-gray-800 text-center mb-8">Contact Us</h2>
-    <p className="text-center text-lg text-gray-600 mb-8">
-      We're here to help! Fill out the form below and we'll get back to you as soon as possible.
-    </p>
-    <form className="space-y-6 text-start">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 ">Name</label>
-        <input type="text" id="name" name="name" className="mt-1 block w-full p-3 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+  <div className="min-h-screen bg-gray-50">
+    
+
+    {/* Contact Options */}
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-blue-100 text-blue-600 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+            <EnvelopeIcon className="h-8 w-8" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Email</h3>
+          <p className="text-gray-600 mb-4">support@truetestify.com</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-blue-100 text-blue-600 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+            <PhoneIcon className="h-8 w-8" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Phone</h3>
+          <p className="text-gray-600 mb-4">+1 (555) 123-4567</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-blue-100 text-blue-600 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+            <MapPinIcon className="h-8 w-8" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Address</h3>
+          <p className="text-gray-600 mb-4">123 Business Street, Suite 100, City, State 12345</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-blue-100 text-blue-600 p-4 rounded-full w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+            <ChatBubbleLeftRightIcon className="h-8 w-8" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-3">Live Chat</h3>
+          <p className="text-gray-600 mb-4">Chat with us 24/7 for instant support</p>
+        </div>
       </div>
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-        <input type="email" id="email" name="email" className="mt-1 block w-full p-3 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+
+      {/* Contact Form & Map */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+        {/* Contact Form */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Send Us a Message</h2>
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                <input type="text" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Your first name" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                <input type="text" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Your last name" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+              <input type="email" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="your.email@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Subject</label>
+              <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option>Select a topic</option>
+                <option>Account & Billing</option>
+                <option>Technical Support</option>
+                <option>Feature Request</option>
+                <option>Bug Report</option>
+                <option>General Inquiry</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Message</label>
+              <textarea rows={6} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Describe your issue or question in detail..." />
+            </div>
+            <div className="text-center">
+              <button type="submit" className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">
+                Send Message
+              </button>
+            </div>
+          </form>
+        </div>
+        {/* Map or Illustration */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl shadow-lg p-8 md:p-12 flex flex-col items-center justify-center">
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Our Office</h3>
+          <div className="w-full h-64 rounded-lg overflow-hidden mb-6">
+            <iframe
+              title="TrueTestify Office Location"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=77.5946%2C12.9716%2C77.5946%2C12.9716&amp;layer=mapnik"
+              className="w-full h-full border-0"
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <div className="text-gray-600 text-center">
+            <div className="mb-2"><strong>Address:</strong> 123 Business Street, Suite 100, City, State 12345</div>
+            <div className="mb-2"><strong>Email:</strong> support@truetestify.com</div>
+            <div><strong>Phone:</strong> +1 (555) 123-4567</div>
+          </div>
+        </div>
       </div>
-      <div>
-        <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
-        <textarea id="message" name="message" rows="4" className="mt-1 block w-full p-3 border border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
-      </div>
-      <div className="text-center">
-        <button
-          type="submit"
-          className="px-8 py-3 bg-blue-600 text-white font-bold tracking-wide transition-colors hover:bg-blue-700"
+    </div>
+
+    {/* CTA Section */}
+    <div className="bg-gradient-to-r from-orange-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-center text-white max-w-4xl mx-auto mb-12">
+      <h2 className="text-4xl font-extrabold mb-4">Ready to Connect?</h2>
+      <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+        Our team is here to answer your questions and help you get the most out of TrueTestify. Reach out today!
+      </p>
+      <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+        <Link
+          to="/support"
+          className="px-8 py-4 text-blue-600 bg-white font-bold text-lg rounded-lg hover:bg-gray-100 transition-colors duration-200"
         >
-          Send Message
-        </button>
+          Visit Support Center
+        </Link>
+        <Link
+          to="/signup"
+          className="px-8 py-4 text-white border-2 border-white font-bold text-lg rounded-lg hover:bg-white hover:text-blue-600 transition-colors duration-200"
+        >
+          Start Free Trial
+        </Link>
       </div>
-    </form>
+    </div>
   </div>
 );
 
-export default Contact
+export default Contact;

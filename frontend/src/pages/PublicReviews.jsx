@@ -28,12 +28,17 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
     }
   }, [isPreview]);
 
-  const approvedReviews = reviews.filter(
-    (r) => r.status === "approved" && r.publicReviewUrl === businessName
-  );
+  let approvedReviews = reviews.filter((r) => r.status === "approved");
+  if (businessName && approvedReviews.some(r => r.publicReviewUrl)) {
+    approvedReviews = approvedReviews.filter(r => r.publicReviewUrl === businessName);
+  }
+  approvedReviews = approvedReviews.sort((a, b) => b.id - a.id); // Show most recent first
 
   const brandLogoUrl = localStorage.getItem('brandLogoUrl') ? JSON.parse(localStorage.getItem('brandLogoUrl')) : null;
   const brandPrimaryColor = localStorage.getItem('brandPrimaryColor') ? JSON.parse(localStorage.getItem('brandPrimaryColor')) : null;
+
+  // Determine layout: use prop, or fallback to 'carousel' for direct usage
+  const layout = initialLayout || 'carousel';
 
   return (
     <div className="p-8 bg-white shadow-sm border border-gray-200">
@@ -50,14 +55,14 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
       )}
       {approvedReviews.length > 0 ? (
         <>
-          {initialLayout === "grid" && (
+          {layout === "grid" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {approvedReviews.map((review) => (
                 <ReviewCard key={review.id} review={review} />
               ))}
             </div>
           )}
-          {initialLayout === "carousel" && (
+          {layout === "carousel" && (
             <div className="overflow-x-scroll flex space-x-6 pb-4">
               {approvedReviews.map((review) => (
                 <div key={review.id} className="min-w-[300px] max-w-[300px]">
@@ -66,7 +71,7 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
               ))}
             </div>
           )}
-          {initialLayout === "wall" && (
+          {layout === "wall" && (
             <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
               {approvedReviews.map((review) => (
                 <div key={review.id} className="mb-6 break-inside-avoid">
@@ -75,7 +80,7 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
               ))}
             </div>
           )}
-          {initialLayout === "spotlight" && approvedReviews.length > 0 && (
+          {layout === "spotlight" && approvedReviews.length > 0 && (
             <div className="flex flex-col items-center">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 Featured Testimonial
