@@ -45,7 +45,8 @@ const TextReviews = () => {
     "Easy to moderate and edit",
     "Great for SEO and search visibility",
     "Works on all devices and browsers",
-    "Ideal for customers who prefer writing"
+    "Ideal for customers who prefer writing",
+    "Fastest way to collect customer feedback with google reviews",
   ];
 
   const stats = [

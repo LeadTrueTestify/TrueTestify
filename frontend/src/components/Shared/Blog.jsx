@@ -344,14 +344,14 @@ const Blog = () => {
         {/* Newsletter Signup */}
         <div className="mt-16 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 md:p-12 text-center text-white">
           <h3 className="text-3xl font-bold mb-4">Stay Updated</h3>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto">
             Get the latest insights on customer testimonials, marketing strategies, and product updates delivered to your inbox.
           </p>
           <div className="max-w-md mx-auto flex gap-4">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-white focus:outline-none"
+              className="flex-1 px-4 py-3 rounded-lg text-gray-900 bg-white focus:ring-2 focus:ring-white focus:outline-none"
             />
             <button className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200">
               Subscribe
