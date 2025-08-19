@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { Route, Routes } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import Home from "./pages/Home";
 import RecordReview from "./pages/RecordReview";
 import PublicReviews from "./pages/PublicReviews";
@@ -40,8 +40,46 @@ import SpotlightWidget from "./components/Shared/Widgets/SpotlightWidget";
 import WallWidget from "./components/Shared/Widgets/WallWidget";
 import GoogleEmbed from "./components/Shared/GoogleEmbed";
 import Document from "./components/Shared/Document";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "./context/AuthContext";
+import axiosInstance from "./utils/axiosInstanse";
+import { API_PATHS } from "./utils/apiPaths";
 
 function App() {
+  const { user } = useContext(AuthContext);
+  const [userInfo, setUserInfo] = useState("");
+  const [business, setBusiness] = useState("");
+  console.log(business);
+
+  const getTenants = async (slug) => {
+    try {
+      const tanants = await axiosInstance.get(
+        API_PATHS.TANANTS.GET_TENANTS(slug)
+      );
+      setBusiness(tanants?.data);
+    } catch (error) {
+      console.log(error);
+      toast.error(error);
+    }
+  };
+
+  // GET LOGIN USER INFO
+  const getUser = async (userId) => {
+    try {
+      const res = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO(userId));
+      setUserInfo(res?.data);
+      const tenant = await res.data.memberships?.map(
+        (value) => value.tenant?.slug
+      );
+      getTenants(tenant);
+    } catch (error) {
+      toast.error(error.message);
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    getUser(user?.id);
+  }, []);
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith("/dashboard");
   return (
@@ -99,7 +137,7 @@ function App() {
               path="/account"
               element={
                 <UserProtectedRoute>
-                  <Account />
+                  <Account userInfo={userInfo} business={business} />
                 </UserProtectedRoute>
               }
             />

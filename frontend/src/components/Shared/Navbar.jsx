@@ -2,7 +2,6 @@ import { useContext, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  ArrowRightEndOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
@@ -15,21 +14,13 @@ const Navbar = () => {
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false);
   const [isWidgetsDropdownOpen, setIsWidgetsDropdownOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
-  const location = useLocation();
   const navigate = useNavigate();
 
-  const isDashboardRoute = location.pathname.startsWith("/dashboard");
-
   const navLinks = user
-    ? user.role === "admin"
-      ? [
-          { name: "Dashboard", href: "/dashboard/moderation", isPrimary: true },
-          { name: "Account", href: "/account", isPrimary: false },
-        ]
-      : [
-          { name: "Review Recorder", href: "/record", isPrimary: false },
-          { name: "Account", href: "/account", isPrimary: true },
-        ]
+    ? user && [
+        { name: "Dashboard", href: "/dashboard/moderation", isPrimary: true },
+        { name: "Account", href: "/account", isPrimary: false },
+      ]
     : [
         { name: "Log In", href: "/login", isPrimary: false },
         { name: "Get Started", href: "/signup", isPrimary: true },
@@ -42,17 +33,49 @@ const Navbar = () => {
   ];
 
   const servicesLinks = [
-    { name: "Video Reviews", href: "/services/video-reviews", description: "Collect authentic video testimonials" },
-    { name: "Audio Reviews", href: "/services/audio-reviews", description: "Voice testimonials for better engagement" },
-    { name: "Text Reviews", href: "/services/text-reviews", description: "Written testimonials with moderation" },
-    { name: "QR Code Collection", href: "/services/qr-collection", description: "Offline review collection" },
+    {
+      name: "Video Reviews",
+      href: "/services/video-reviews",
+      description: "Collect authentic video testimonials",
+    },
+    {
+      name: "Audio Reviews",
+      href: "/services/audio-reviews",
+      description: "Voice testimonials for better engagement",
+    },
+    {
+      name: "Text Reviews",
+      href: "/services/text-reviews",
+      description: "Written testimonials with moderation",
+    },
+    {
+      name: "QR Code Collection",
+      href: "/services/qr-collection",
+      description: "Offline review collection",
+    },
   ];
 
   const widgetsLinks = [
-    { name: "Carousel Widget", href: "/widgets/carousel", description: "Sliding testimonials with autoplay" },
-    { name: "Grid Widget", href: "/widgets/grid", description: "Clean grid layout for multiple reviews" },
-    { name: "Spotlight Widget", href: "/widgets/spotlight", description: "Feature your best testimonials" },
-    { name: "Wall Widget", href: "/widgets/wall", description: "Social media-style display" },
+    {
+      name: "Carousel Widget",
+      href: "/widgets/carousel",
+      description: "Sliding testimonials with autoplay",
+    },
+    {
+      name: "Grid Widget",
+      href: "/widgets/grid",
+      description: "Clean grid layout for multiple reviews",
+    },
+    {
+      name: "Spotlight Widget",
+      href: "/widgets/spotlight",
+      description: "Feature your best testimonials",
+    },
+    {
+      name: "Wall Widget",
+      href: "/widgets/wall",
+      description: "Social media-style display",
+    },
   ];
 
   const handleLogout = () => {
@@ -68,8 +91,12 @@ const Navbar = () => {
         <nav className="w-full bg-gray-900 text-white py-4 md:py-5 border-t border-gray-800 z-30">
           <div className="flex justify-between items-center max-w-7xl mx-auto px-4">
             <Link to="/" className="flex items-center gap-2">
-              <span className="text-3xl font-extrabold text-gray-200 tracking-tight">TrueTestify</span>
-              <span className="hidden sm:inline-block text-[10px] uppercase bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">Beta</span>
+              <span className="text-3xl font-extrabold text-gray-200 tracking-tight">
+                TrueTestify
+              </span>
+              <span className="hidden sm:inline-block text-[10px] uppercase bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
+                Beta
+              </span>
             </Link>
             <div className="flex items-center space-x-4 md:space-x-6">
               {/* Desktop links */}
@@ -82,7 +109,7 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              
+
               {/* Services Dropdown */}
               <div className="hidden lg:block relative">
                 <button
@@ -106,7 +133,9 @@ const Navbar = () => {
                         className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
                       >
                         <div className="font-medium">{service.name}</div>
-                        <div className="text-sm text-gray-600">{service.description}</div>
+                        <div className="text-sm text-gray-600">
+                          {service.description}
+                        </div>
                       </Link>
                     ))}
                   </div>
@@ -136,7 +165,9 @@ const Navbar = () => {
                         className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
                       >
                         <div className="font-medium">{widget.name}</div>
-                        <div className="text-sm text-gray-600">{widget.description}</div>
+                        <div className="text-sm text-gray-600">
+                          {widget.description}
+                        </div>
                       </Link>
                     ))}
                   </div>
@@ -177,7 +208,10 @@ const Navbar = () => {
                 </button>
               )}
               {/* Mobile menu button */}
-              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden text-gray-300 hover:text-white">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden text-gray-300 hover:text-white"
+              >
                 <Bars3Icon className="h-7 w-7" />
               </button>
             </div>
@@ -219,10 +253,12 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
-                
+
                 {/* Mobile Services Section */}
                 <div className="border-t border-gray-700 pt-6">
-                  <div className="text-2xl font-bold text-gray-400 mb-4">Services</div>
+                  <div className="text-2xl font-bold text-gray-400 mb-4">
+                    Services
+                  </div>
                   {servicesLinks.map((service) => (
                     <Link
                       key={service.name}
@@ -237,7 +273,9 @@ const Navbar = () => {
 
                 {/* Mobile Widgets Section */}
                 <div className="border-t border-gray-700 pt-6">
-                  <div className="text-2xl font-bold text-gray-400 mb-4">Widgets</div>
+                  <div className="text-2xl font-bold text-gray-400 mb-4">
+                    Widgets
+                  </div>
                   {widgetsLinks.map((widget) => (
                     <Link
                       key={widget.name}

@@ -13,6 +13,8 @@ async function bootstrap() {
     credentials: true,
   })
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
-  await app.listen(process.env.PORT || 3000)
+  const port = await app.listen(process.env.PORT || 3000)
+  console.log(`http://localhost:${port._connectionKey}`);
+  
 }
 bootstrap()

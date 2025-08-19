@@ -1,23 +1,64 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { validateEmail } from "../utils/helper";
+import axiosInstance from "../utils/axiosInstanse";
+import { API_PATHS } from "../utils/apiPaths";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loginPlateForm } = useContext(AuthContext);
+  const { updateUser, loginPlateForm } = useContext(AuthContext);
+  const [error,setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  // LOGIN FROM HANDLER
+   const handleLogin = async (e) => {
     e.preventDefault();
-    login(email, password);
-    navigate("/record");
-  };
 
+    // Check Email Condition
+    if (!validateEmail(email)) {
+      setError("Plase enter a valid Email.");
+      return;
+    }
+
+    // Check Password Condition
+    if (!password) {
+      setError("Plase Enter Password.");
+      return;
+    }
+
+    setError("");
+
+    // Login API Call
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password,
+      });
+      const { token, user } = response.data;
+      console.log(user);
+      
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user)
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Someting went Wronge. Please try again.");
+      }
+    }
+  }; 
+
+  // HANDLER FOR PLATE FORM : WORDPRESS - SHOPIFY
   const handleLoginPlateform = (platform) => {
     loginPlateForm("admin", `admin@${platform}.com`);
     navigate("/dashboard/moderation");
   };
+  
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-3xl font-bold text-blue-600 mb-6 text-center">
@@ -123,6 +164,7 @@ const Login = () => {
             Sign up
           </Link>
         </p>
+        {error && <p className="text-red-500 pb-2.5 text-xs">{error}</p>}
       </div>
     </div>
   );

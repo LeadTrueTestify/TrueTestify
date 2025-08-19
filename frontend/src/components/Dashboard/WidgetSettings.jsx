@@ -80,7 +80,7 @@ const WidgetSettings = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 mb-6 bg-green-50 text-green-800 border-l-4 border-green-500">
           <p className="font-semibold flex items-center">
             <PuzzlePieceIcon className="h-6 w-6 mr-2" />
-            Connected to TrueTestify account: <span className="ml-2 font-bold">{user?.id}</span>
+            Connected to TrueTestify account: <span className="ml-2 font-bold">{user?.email}</span>
           </p>
           <button className="text-green-600 hover:underline">Disconnect</button>
         </div>
