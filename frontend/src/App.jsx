@@ -49,14 +49,12 @@ function App() {
   const { user } = useContext(AuthContext);
   const [userInfo, setUserInfo] = useState("");
   const [business, setBusiness] = useState("");
-  console.log(business);
+    console.log(business);
 
   const getTenants = async (slug) => {
     try {
-      const tanants = await axiosInstance.get(
-        API_PATHS.TANANTS.GET_TENANTS(slug)
-      );
-      setBusiness(tanants?.data);
+      const res = await axiosInstance.get(API_PATHS.TANANTS.GET_TENANTS(slug));
+      setBusiness(res.data);
     } catch (error) {
       console.log(error);
       toast.error(error);
@@ -67,11 +65,11 @@ function App() {
   const getUser = async (userId) => {
     try {
       const res = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO(userId));
-      setUserInfo(res?.data);
+      setUserInfo(res.data);
       const tenant = await res.data.memberships?.map(
         (value) => value.tenant?.slug
       );
-      getTenants(tenant);
+      await getTenants(tenant);
     } catch (error) {
       toast.error(error.message);
       console.log(error);
@@ -79,7 +77,7 @@ function App() {
   };
   useEffect(() => {
     getUser(user?.id);
-  }, []);
+  }, [getUser]);
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith("/dashboard");
   return (
