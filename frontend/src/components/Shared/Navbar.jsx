@@ -85,148 +85,141 @@ const Navbar = () => {
 
   return (
     <>
-      <>
-        {/* Main site navbar, not fixed to avoid conflict with the dashboard layout's fixed navbar */}
-
-        <nav className="w-full bg-gray-900 text-white py-4 md:py-5 border-t border-gray-800 z-30">
-          <div className="flex justify-between items-center max-w-7xl mx-auto px-4">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="text-3xl font-extrabold text-gray-200 tracking-tight">
-                TrueTestify
-              </span>
-              <span className="hidden sm:inline-block text-[10px] uppercase bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
-                Beta
-              </span>
-            </Link>
-            <div className="flex items-center space-x-4 md:space-x-6">
-              {/* Desktop links */}
-              {mainNavLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
-                >
-                  {link.name}
-                </Link>
-              ))}
-
-              {/* Services Dropdown */}
-              <div className="hidden lg:block relative">
-                <button
+      <nav className="w-full bg-gray-900 text-white py-4 md:py-5 border-t border-gray-800 z-30">
+        <div className="flex justify-between items-center max-w-7xl mx-auto px-4">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-3xl font-extrabold text-gray-200 tracking-tight">
+              TrueTestify
+            </span>
+            <span className="hidden sm:inline-block text-[10px] uppercase bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
+              Beta
+            </span>
+          </Link>
+          <div className="flex items-center space-x-4 md:space-x-6">
+            {/* Desktop links */}
+            {mainNavLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
+              >
+                {link.name}
+              </Link>
+            ))}
+            <div className="hidden lg:block relative">
+              <button
+                onMouseEnter={() => setIsServicesDropdownOpen(true)}
+                onMouseLeave={() => setIsServicesDropdownOpen(false)}
+                className="flex items-center text-gray-100 font-medium hover:text-orange-500 transition-colors"
+              >
+                Services
+                <ChevronDownIcon className="h-4 w-4 ml-1" />
+              </button>
+              {isServicesDropdownOpen && (
+                <div
                   onMouseEnter={() => setIsServicesDropdownOpen(true)}
                   onMouseLeave={() => setIsServicesDropdownOpen(false)}
-                  className="flex items-center text-gray-100 font-medium hover:text-orange-500 transition-colors"
+                  className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
                 >
-                  Services
-                  <ChevronDownIcon className="h-4 w-4 ml-1" />
-                </button>
-                {isServicesDropdownOpen && (
-                  <div
-                    onMouseEnter={() => setIsServicesDropdownOpen(true)}
-                    onMouseLeave={() => setIsServicesDropdownOpen(false)}
-                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
-                  >
-                    {servicesLinks.map((service) => (
-                      <Link
-                        key={service.name}
-                        to={service.href}
-                        className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="font-medium">{service.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {service.description}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Widgets Dropdown */}
-              <div className="hidden lg:block relative">
-                <button
+                  {servicesLinks.map((service) => (
+                    <Link
+                      key={service.name}
+                      to={service.href}
+                      className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="font-medium">{service.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {service.description}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="hidden lg:block relative">
+              <button
+                onMouseEnter={() => setIsWidgetsDropdownOpen(true)}
+                onMouseLeave={() => setIsWidgetsDropdownOpen(false)}
+                className="flex items-center text-gray-100 font-medium hover:text-orange-500 transition-colors"
+              >
+                Widgets
+                <ChevronDownIcon className="h-4 w-4 ml-1" />
+              </button>
+              {isWidgetsDropdownOpen && (
+                <div
                   onMouseEnter={() => setIsWidgetsDropdownOpen(true)}
                   onMouseLeave={() => setIsWidgetsDropdownOpen(false)}
-                  className="flex items-center text-gray-100 font-medium hover:text-orange-500 transition-colors"
+                  className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
                 >
-                  Widgets
-                  <ChevronDownIcon className="h-4 w-4 ml-1" />
-                </button>
-                {isWidgetsDropdownOpen && (
-                  <div
-                    onMouseEnter={() => setIsWidgetsDropdownOpen(true)}
-                    onMouseLeave={() => setIsWidgetsDropdownOpen(false)}
-                    className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
-                  >
-                    {widgetsLinks.map((widget) => (
-                      <Link
-                        key={widget.name}
-                        to={widget.href}
-                        className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="font-medium">{widget.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {widget.description}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Link
-                to="/about"
-                className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
-              >
-                About
-              </Link>
-              <Link
-                to="/docs"
-                className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
-              >
-                Docs
-              </Link>
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className={`hidden lg:block px-6 py-2 font-bold transition-colors ${
-                    link.isPrimary
-                      ? "text-white bg-orange-500 hover:bg-orange-600"
-                      : "text-gray-100 border border-gray-300 hover:bg-gray-600"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              {user && (
-                <button
-                  onClick={handleLogout}
-                  className="hidden lg:block text-red-500 hover:text-red-700 transition-colors"
-                >
-                  <ArrowLeftOnRectangleIcon className="h-6 w-6" />
-                </button>
+                  {widgetsLinks.map((widget) => (
+                    <Link
+                      key={widget.name}
+                      to={widget.href}
+                      className="block px-4 py-3 text-gray-800 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="font-medium">{widget.name}</div>
+                      <div className="text-sm text-gray-600">
+                        {widget.description}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               )}
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden text-gray-300 hover:text-white"
-              >
-                <Bars3Icon className="h-7 w-7" />
-              </button>
             </div>
-          </div>
-        </nav>
-        {/* Mobile Menu Overlay for main site */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-              className="fixed inset-0 w-full bg-gray-900 text-white z-50 p-6 flex flex-col"
+            <Link
+              to="/about"
+              className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
             >
+              About
+            </Link>
+            <Link
+              to="/docs"
+              className="hidden lg:block text-gray-100 font-medium hover:text-orange-500 transition-colors"
+            >
+              Docs
+            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={`hidden lg:block px-6 py-2 font-bold transition-colors ${
+                  link.isPrimary
+                    ? "text-white bg-orange-500 hover:bg-orange-600"
+                    : "text-gray-100 border border-gray-300 hover:bg-gray-600"
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="hidden lg:block text-red-500 hover:text-red-700 transition-colors"
+              >
+                <ArrowLeftOnRectangleIcon className="h-6 w-6" />
+              </button>
+            )}
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden text-gray-300 hover:text-white"
+            >
+              <Bars3Icon className="h-7 w-7" />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="fixed inset-0 w-full h-full bg-opacity-70 z-50 flex justify-end"
+          >
+            <div className="w-[85%] sm:w-[50%] h-full bg-gray-900 text-white p-6 flex flex-col overflow-hidden">
               <div className="flex justify-between items-center pb-6 border-b border-gray-700">
                 <Link
                   to="/"
@@ -242,7 +235,7 @@ const Navbar = () => {
                   <XMarkIcon className="h-8 w-8" />
                 </button>
               </div>
-              <nav className="flex-1 mt-8 space-y-6">
+              <nav className="flex-1 mt-8 space-y-6 overflow-y-auto custom-scrollbar">
                 {mainNavLinks.map((link) => (
                   <Link
                     key={link.name}
@@ -253,8 +246,6 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
-
-                {/* Mobile Services Section */}
                 <div className="border-t border-gray-700 pt-6">
                   <div className="text-2xl font-bold text-gray-400 mb-4">
                     Services
@@ -270,8 +261,6 @@ const Navbar = () => {
                     </Link>
                   ))}
                 </div>
-
-                {/* Mobile Widgets Section */}
                 <div className="border-t border-gray-700 pt-6">
                   <div className="text-2xl font-bold text-gray-400 mb-4">
                     Widgets
@@ -287,7 +276,6 @@ const Navbar = () => {
                     </Link>
                   ))}
                 </div>
-
                 <Link
                   to="/about"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -328,10 +316,10 @@ const Navbar = () => {
                   </button>
                 )}
               </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
