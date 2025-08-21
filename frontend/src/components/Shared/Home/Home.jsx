@@ -13,11 +13,11 @@ import {
   ClockIcon,
   CogIcon,
 } from "@heroicons/react/16/solid";
-import Features from "../components/UI/Features";
-import Pricing from "../components/Dashboard/Pricing";
-import Contact from "../components/Shared/Contact";
-import { MOCK_REVIEWS } from "../assets/mockData";
-import ReviewCard from "../components/UI/ReviewCard";
+import Features from "./Features";
+import Pricing from "./Pricing";
+import Contact from "../Contact";
+import { MOCK_REVIEWS } from "../../../assets/mockData";
+import ReviewCard from "../../UI/ReviewCard";
 
 const Home = () => {
   const featuredReviews = MOCK_REVIEWS.filter(
@@ -31,7 +31,7 @@ const Home = () => {
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <svg className="absolute -top-24 -right-24 w-96 h-96 opacity-20 text-orange-300" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M41.9,-64.5C54.8,-55.8,66.1,-46.5,73.1,-34.7C80.1,-22.8,82.9,-8.5,80.9,4.8C79,18.2,72.4,30.7,64.1,42.3C55.9,53.9,45.9,64.6,33.7,70.6C21.5,76.7,7.2,78,-5.8,76.3C-18.8,74.7,-30.5,70.1,-42,63.6C-53.4,57.1,-64.6,48.7,-71.9,37.5C-79.1,26.3,-82.4,12.1,-83.1,-2.2C-83.8,-16.5,-81.8,-33,-73.9,-45C-66.1,-56.9,-52.4,-64.4,-38.3,-72.1C-24.2,-79.8,-12.1,-87.6,0.1,-87.8C12.3,-88,24.7,-80.6,41.9,-64.5Z" transform="translate(100 100)" /></svg>
         </div>
-        <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight">
+        <h1 className="text-4xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight">
           Transform Customer Feedback Into
           <span className="text-orange-500"> Sales Power</span>
         </h1>
@@ -96,27 +96,27 @@ const Home = () => {
       </div>
 
       {/* Statistics Section */}
-      <div className="px-6 py-16 md:p-20 bg-white border-b border-gray-200">
+      <div className="px-6 py-16 mt-5 md:p-10 bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16 tracking-tight">
+          <h2 className="text-4xl md:text-3xl font-extrabold text-gray-800 mb-16 tracking-tight">
             Trusted by Businesses Worldwide
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">10K+</div>
-              <p className="text-gray-600 font-medium">Active Businesses</p>
+              <div className="text-4xl md:text-2xl font-bold text-orange-500 mb-2">10K+</div>
+              <p className="text-gray-600 font-sans">Active Businesses</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">2M+</div>
-              <p className="text-gray-600 font-medium">Reviews Collected</p>
+              <div className="text-4xl md:text-2xl font-bold text-orange-500 mb-2">2M+</div>
+              <p className="text-gray-600 font-sans">Reviews Collected</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">98%</div>
-              <p className="text-gray-600 font-medium">Customer Satisfaction</p>
+              <div className="text-4xl md:text-2xl font-bold text-orange-500 mb-2">98%</div>
+              <p className="text-gray-600 font-sans">Customer Satisfaction</p>
             </div>
             <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">24/7</div>
-              <p className="text-gray-600 font-medium">Support Available</p>
+              <div className="text-4xl md:text-2xl font-bold text-orange-500 mb-2">24/7</div>
+              <p className="text-gray-600 font-sans">Support Available</p>
             </div>
           </div>
         </div>
@@ -125,15 +125,15 @@ const Home = () => {
       {/* How It Works Section */}
       <div className="px-6 py-16 md:p-20 bg-gray-50 border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16 tracking-tight">
+          <h2 className="text-4xl md:text-3xl font-extrabold text-gray-800 mb-16 tracking-tight">
             How TrueTestify Works
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="bg-orange-100 text-orange-500 p-6 mb-6 rounded-full">
-                <CloudArrowUpIcon className="h-12 w-12" />
+            <div className="flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+              <div className="bg-orange-100 text-orange-500 p-4 mb-6 rounded-full ">
+                <CloudArrowUpIcon className="h-7 w-7" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              <h3 className="text-1xl font-bold text-gray-800 mb-4">
                 1. Collect Reviews
               </h3>
               <p className="text-gray-600 leading-relaxed">
@@ -141,10 +141,10 @@ const Home = () => {
               </p>
             </div>
             <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="bg-orange-100 text-orange-500 p-6 mb-6 rounded-full">
-                <PencilIcon className="h-12 w-12" />
+              <div className="bg-orange-100 text-orange-500 p-4 mb-6 rounded-full">
+                <PencilIcon className="h-7 w-7" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
                 2. Moderate & Approve
               </h3>
               <p className="text-gray-600 leading-relaxed">
@@ -152,8 +152,8 @@ const Home = () => {
               </p>
             </div>
             <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="bg-orange-100 text-orange-500 p-6 mb-6 rounded-full">
-                <PuzzlePieceIcon className="h-12 w-12" />
+              <div className="bg-orange-100 text-orange-500 p-4 mb-6 rounded-full">
+                <PuzzlePieceIcon className="h-7 w-7" />
               </div>
               <h3 className="text-2xl font-bold text-gray-800 mb-4">
                 3. Display & Convert
@@ -169,34 +169,34 @@ const Home = () => {
       {/* Widget Showcase Section */}
       <div className="px-6 py-16 md:p-20 bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16 tracking-tight">
+          <h2 className="text-4xl md:text-3xl font-extrabold text-gray-800 mb-16 tracking-tight">
             Powerful Widget Options
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center p-6 bg-gray-50 rounded-xl">
               <div className="bg-blue-100 text-blue-500 p-4 mb-4 rounded-lg mx-auto w-16 h-16 flex items-center justify-center">
-                <CursorArrowRaysIcon className="h-8 w-8" />
+                <CursorArrowRaysIcon className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">Carousel</h3>
               <p className="text-gray-600">Smooth sliding testimonials with autoplay and navigation controls.</p>
             </div>
             <div className="text-center p-6 bg-gray-50 rounded-xl">
               <div className="bg-green-100 text-green-500 p-4 mb-4 rounded-lg mx-auto w-16 h-16 flex items-center justify-center">
-                <ChartBarIcon className="h-8 w-8" />
+                <ChartBarIcon className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">Grid Layout</h3>
               <p className="text-gray-600">Clean grid display perfect for showcasing multiple testimonials.</p>
             </div>
             <div className="text-center p-6 bg-gray-50 rounded-xl">
               <div className="bg-purple-100 text-purple-500 p-4 mb-4 rounded-lg mx-auto w-16 h-16 flex items-center justify-center">
-                <StarIcon className="h-8 w-8" />
+                <StarIcon className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">Spotlight</h3>
               <p className="text-gray-600">Feature your best testimonials with prominent display options.</p>
             </div>
             <div className="text-center p-6 bg-gray-50 rounded-xl">
               <div className="bg-orange-100 text-orange-500 p-4 mb-4 rounded-lg mx-auto w-16 h-16 flex items-center justify-center">
-                <UsersIcon className="h-8 w-8" />
+                <UsersIcon className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-3">Wall</h3>
               <p className="text-gray-600">Social media-style wall showing all your customer reviews.</p>
@@ -208,15 +208,15 @@ const Home = () => {
       {/* Benefits Section */}
       <div className="px-6 py-16 md:p-20 bg-gray-50 border-b border-gray-200">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16 tracking-tight">
+          <h2 className="text-4xl md:text-3xl font-extrabold text-gray-800 mb-16 tracking-tight">
             Why Choose TrueTestify?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-              <div className="bg-green-100 text-green-500 p-3 mb-4 rounded-lg w-12 h-12 flex items-center justify-center">
+              <div className="bg-green-100 text-green-500 p-2 mb-4 rounded-lg w-12 h-12 flex items-center justify-center">
                 <ShieldCheckIcon className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Built-in Moderation</h3>
+              <h3 className="text-md font-bold text-gray-800 mb-3">Built-in Moderation</h3>
               <p className="text-gray-600">Review and approve all testimonials before they go live. Maintain quality and brand safety.</p>
             </div>
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
@@ -262,7 +262,7 @@ const Home = () => {
       {featuredReviews.length > 0 && (
         <div className="px-6 py-16 md:p-20 bg-white border-b border-gray-200">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-16 tracking-tight">
+            <h2 className="text-4xl md:text-3xl font-extrabold text-gray-800 mb-16 tracking-tight">
               What Our Customers Say
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
