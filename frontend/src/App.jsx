@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Route, Routes } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import Home from "./components/Shared/Home/Home";
+import Home from "./pages/Home";
 import RecordReview from "./pages/RecordReview";
 import PublicReviews from "./pages/PublicReviews";
 import DashboardLayout from "./components/UI/DashboardLayout";
@@ -9,13 +9,13 @@ import AdminSettings from "./components/Dashboard/AdminSettings";
 import Moderation from "./components/Dashboard/Moderation";
 import Analytics from "./components/Dashboard/Analytics";
 import ManageSubscription from "./pages/ManageSubscrption";
-import Pricing from "./components/Shared/Pricing";
+import Pricing from "./components/Dashboard/Pricing";
 import Billing from "./components/Dashboard/Billing";
 import UserProtectedRoute from "./components/UI/UserProtectedRoute";
 import AdminProtectedRoute from "./components/UI/AdminProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Features from "./components/Shared/Features";
+import Features from "./components/UI/Features";
 import WidgetSettings from "./components/Dashboard/WidgetSettings";
 import Footer from "./components/Shared/Footer";
 import FloatingReviewWidget from "./components/Dashboard/FloatingReviewWidget";
@@ -40,46 +40,14 @@ import SpotlightWidget from "./components/Shared/Widgets/SpotlightWidget";
 import WallWidget from "./components/Shared/Widgets/WallWidget";
 import GoogleEmbed from "./components/Shared/GoogleEmbed";
 import Document from "./components/Shared/Document";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "./context/AuthContext";
-import axiosInstance from "./utils/axiosInstanse";
-import { API_PATHS } from "./utils/apiPaths";
 
 function App() {
-  const { user } = useContext(AuthContext);
-  const [userInfo, setUserInfo] = useState("");
-  const [business, setBusiness] = useState("");
-    console.log(business);
-
-  const getTenants = async (slug) => {
-    try {
-      const res = await axiosInstance.get(API_PATHS.TANANTS.GET_TENANTS(slug));
-      setBusiness(res.data);
-    } catch (error) {
-      console.log(error);
-      toast.error(error);
-    }
-  };
-
-  // GET LOGIN USER INFO
-  const getUser = async (userId) => {
-    try {
-      const res = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO(userId));
-      setUserInfo(res.data);
-      const tenant = await res.data.memberships?.map(
-        (value) => value.tenant?.slug
-      );
-      await getTenants(tenant);
-    } catch (error) {
-      toast.error(error.message);
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    getUser(user?.id);
-  }, [getUser]);
+  const { user, tenant } = useContext(AuthContext);
   const location = useLocation();
   const isDashboardRoute = location.pathname.startsWith("/dashboard");
+
   return (
     <>
       <div className="min-h-screen flex flex-col font-sans bg-gray-50">
@@ -135,7 +103,7 @@ function App() {
               path="/account"
               element={
                 <UserProtectedRoute>
-                  <Account userInfo={userInfo} business={business} />
+                  <Account userInfo={user} business={tenant} />
                 </UserProtectedRoute>
               }
             />
@@ -148,10 +116,10 @@ function App() {
                 </AdminProtectedRoute>
               }
             >
-              <Route index element={<Moderation />} />
+              <Route index element={<Moderation userInfo={user} business={tenant} />} />
               <Route path="moderation" element={<Moderation />} />
               <Route path="analytics" element={<Analytics />} />
-              <Route path="widget-settings" element={<WidgetSettings />} />
+              <Route path="widget-settings" element={<WidgetSettings business={tenant} />} />
               <Route path="billing" element={<Billing />} />
               <Route
                 path="manage-subscription"

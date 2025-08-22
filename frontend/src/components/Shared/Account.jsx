@@ -1,7 +1,6 @@
 import {
   CogIcon,
   ShieldCheckIcon,
-  SwatchIcon,
   UserIcon,
   WrenchScrewdriverIcon,
 } from "@heroicons/react/16/solid";

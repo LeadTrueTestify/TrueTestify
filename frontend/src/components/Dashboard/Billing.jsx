@@ -1,6 +1,7 @@
 import { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const InvoiceList = () => {
   const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
@@ -70,6 +71,7 @@ TrueTestify
 };
 
 const Billing = () => {
+  const navigate = useNavigate()
   const { subscription, billingInfo, saveBilling } = useContext(AuthContext);
   const [form, setForm] = useState({
     name: billingInfo?.name || '',
@@ -128,7 +130,7 @@ const Billing = () => {
       localStorage.setItem('invoices', JSON.stringify([newInvoice, ...invoices]));
       
       toast.success('Payment successful! Your subscription has been activated.');
-      
+      navigate('/dashboard')
       // Reset form
       setForm(prev => ({
         ...prev,
