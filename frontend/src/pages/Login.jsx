@@ -2,61 +2,58 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../utils/helper";
-import axiosInstance from "../utils/axiosInstanse";
-import { API_PATHS } from "../utils/apiPaths";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { updateUser, loginPlateForm } = useContext(AuthContext);
-  const [error,setError] = useState("");
+  const { login, loginPlatform } = useContext(AuthContext);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // LOGIN FROM HANDLER
-   const handleLogin = async (e) => {
+  // LOGIN FORM HANDLER
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     // Check Email Condition
     if (!validateEmail(email)) {
-      setError("Plase enter a valid Email.");
+      setError("Please enter a valid email.");
       return;
     }
 
     // Check Password Condition
     if (!password) {
-      setError("Plase Enter Password.");
+      setError("Please enter password.");
       return;
     }
 
     setError("");
+    setLoading(true);
 
-    // Login API Call
     try {
-      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
-        email,
-        password,
-      });
-      const { token, user } = response.data;
-      console.log(user);
-      
-      if (token) {
-        localStorage.setItem("token", token);
-        updateUser(user)
+      const result = await login(email, password);
+      if (result.success) {
         navigate("/dashboard");
       }
     } catch (error) {
-      if (error.response && error.response.data.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Someting went Wronge. Please try again.");
-      }
+      // Error is already handled in AuthContext
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
     }
   }; 
 
-  // HANDLER FOR PLATE FORM : WORDPRESS - SHOPIFY
-  const handleLoginPlateform = (platform) => {
-    loginPlateForm("admin", `admin@${platform}.com`);
-    navigate("/dashboard/moderation");
+  // HANDLER FOR PLATFORM LOGIN: WORDPRESS - SHOPIFY
+  const handlePlatformLogin = async (platform) => {
+    setLoading(true);
+    try {
+      await loginPlatform(platform);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Platform login error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -76,6 +73,7 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
             required
+            disabled={loading}
           />
         </div>
         <div>
@@ -89,19 +87,22 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 block h-10 w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
             required
+            disabled={loading}
           />
         </div>
         <button
           type="submit"
-          className="w-full mb-2 space-x-2 py-3 px-4 bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors shadow-lg"
+          disabled={loading}
+          className="w-full mb-2 space-x-2 py-3 px-4 bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Log In
+          {loading ? "Logging in..." : "Log In"}
         </button>
       </form>
       <div className="space-y-4">
         <button
-          onClick={() => handleLoginPlateform("shopify")}
-          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-gray-800 text-white font-bold tracking-wide hover:bg-gray-700 transition-colors"
+          onClick={() => handlePlatformLogin("shopify")}
+          disabled={loading}
+          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-gray-800 text-white font-bold tracking-wide hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -127,8 +128,9 @@ const Login = () => {
           <span>Connect with Shopify</span>
         </button>
         <button
-          onClick={() => handleLoginPlateform("wordpress")}
-          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-blue-500 text-white font-bold tracking-wide hover:bg-blue-600 transition-colors"
+          onClick={() => handlePlatformLogin("wordpress")}
+          disabled={loading}
+          className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-blue-500 text-white font-bold tracking-wide hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,32 +1,81 @@
 
 export const BASE_URL = import.meta.env.VITE_BASE_URL
 
-// utils/api.paths.js
+// API Paths for TrueTestify MVP
 export const API_PATHS = {
-    AUTH:{
-        LOGIN:"/api/v1/auth/login",
-        REGSITER:"/api/v1/auth/register",
-        GET_USER_INFO:(user_id)=>`/api/v1/users/${user_id}`,
+    AUTH: {
+        LOGIN: "/api/v1/auth/login",
+        REGISTER: "/api/v1/auth/register",
+        GET_USER_INFO: (user_id) => `/api/v1/users/${user_id}`,
+        REFRESH_TOKEN: "/api/v1/auth/refresh",
     },
-    TANANTS:{
-        GET_TENANTS:(slug)=>`/tenants/${slug}`,
-        UPDATE_TENANTS:(id)=>`/tenants/${id}`,
-        CREATE_TENANTS_API:(id)=>`/tenants/${id}`
+    TENANTS: {
+        GET_TENANTS: (id) => `/api/v1/tenants/${id}`,
+        UPDATE_TENANTS: (id) => `/api/v1/tenants/${id}`,
+        CREATE_TENANTS: "/api/v1/tenants",
+        GET_TENANT_BY_SLUG: (slug) => `/api/v1/tenants/slug/${slug}`,
     },
-    // INCOME:{
-    //     ADD_INCOME:"/api/v1/income/add",
-    //     GET_INCOME:"/api/v1/income/get",
-    //     DELETE_INCOME:(income_id)=>`/api/v1/income/delete/${income_id}`,
-    //     DOWNLOAD_INCOME_REPORT:"/api/v1/income/download-report"
-    // },
-    // EXPENSE:{
-    //     ADD_EXPENSE:"/api/v1/expense/add",
-    //     GET_EXPENSE:"/api/v1/expense/get",
-    //     DELETE_EXPENSE:(expense_id)=>`/api/v1/expense/delete/${expense_id}`,
-    //     DOWNLOAD_EXPENSE_REPORT:"/api/v1/expense/download-report"
-    // },
-    // IMAGE:{
-    //     UPLOAD_IMAGE:"/api/v1/auth/upload-image"
-    // }
-
+    REVIEWS: {
+        CREATE_REVIEW: "/api/v1/reviews",
+        GET_REVIEWS: (tenantId) => `/api/v1/reviews/${tenantId}/list`,
+        GET_REVIEW: (id) => `/api/v1/reviews/${id}`,
+        UPDATE_REVIEW: (id) => `/api/v1/reviews/${id}`,
+        DELETE_REVIEW: (id) => `/api/v1/reviews/${id}`,
+        APPROVE_REVIEW: (id) => `/api/v1/reviews/${id}/approve`,
+        REJECT_REVIEW: (id) => `/api/v1/reviews/${id}/reject`,
+        HIDE_REVIEW: (id) => `/api/v1/reviews/${id}/hide`,
+        UPLOAD_VIDEO: "/api/v1/reviews/upload-video",
+        UPLOAD_AUDIO: "/api/v1/reviews/upload-audio",
+    },
+    WIDGETS: {
+        CREATE_WIDGET: "/api/v1/widgets",
+        GET_WIDGETS: (tenantId) => `widgets/${tenantId}`,
+        GET_WIDGET: (id) => `/api/v1/widgets/${id}`,
+        UPDATE_WIDGET: (id) => `/api/v1/widgets/${id}`,
+        DELETE_WIDGET: (id) => `/api/v1/widgets/${id}`,
+        TOGGLE_WIDGET: (id) => `/api/v1/widgets/${id}/toggle`,
+        GET_WIDGET_EMBED_CODE: (id) => `/api/v1/widgets/${id}/embed`,
+    },
+    ANALYTICS: {
+        GET_ANALYTICS: (tenantId) => `/api/v1/analytics/tenant/${tenantId}`,
+        GET_WIDGET_VIEWS: (widgetId) => `/api/v1/analytics/widget/${widgetId}/views`,
+        GET_REVIEW_STATS: (tenantId) => `/api/v1/analytics/tenant/${tenantId}/reviews`,
+        TRACK_WIDGET_VIEW: (widgetId) => `/api/v1/analytics/widget/${widgetId}/view`,
+    },
+    BILLING: {
+        GET_BILLING_ACCOUNT: (tenantId) => `/api/v1/billing/tenant/${tenantId}`,
+        CREATE_SUBSCRIPTION: "/api/v1/billing/subscriptions",
+        GET_SUBSCRIPTIONS: (tenantId) => `/api/v1/billing/tenant/${tenantId}/subscriptions`,
+        GET_INVOICES: (tenantId) => `/api/v1/billing/tenant/${tenantId}/invoices`,
+        GET_USAGE: (tenantId) => `/api/v1/billing/tenant/${tenantId}/usage`,
+        CREATE_CHECKOUT_SESSION: "/api/v1/billing/checkout",
+        CREATE_PORTAL_SESSION: "/api/v1/billing/portal",
+        STRIPE_WEBHOOK: "/api/v1/billing/webhook",
+    },
+    STORAGE: {
+        GET_UPLOAD_URL: "/api/v1/storage/upload-url",
+        GET_DOWNLOAD_URL: (key) => `/api/v1/storage/download-url/${key}`,
+        DELETE_FILE: (key) => `/api/v1/storage/delete/${key}`,
+    },
+    API_KEYS: {
+        CREATE_API_KEY: "/api/v1/api-keys",
+        GET_API_KEYS: (tenantId) => `/api/v1/api-keys/tenant/${tenantId}`,
+        DELETE_API_KEY: (id) => `/api/v1/api-keys/${id}`,
+    },
+    INTEGRATIONS: {
+        SHOPIFY: {
+            CONNECT: "/api/v1/integrations/shopify/connect",
+            DISCONNECT: "/api/v1/integrations/shopify/disconnect",
+            GET_STATUS: (tenantId) => `/api/v1/integrations/shopify/tenant/${tenantId}`,
+        },
+        WORDPRESS: {
+            CONNECT: "/api/v1/integrations/wordpress/connect",
+            DISCONNECT: "/api/v1/integrations/wordpress/disconnect",
+            GET_STATUS: (tenantId) => `/api/v1/integrations/wordpress/tenant/${tenantId}`,
+        },
+    },
+    EMBEDS: {
+        GET_PUBLIC_REVIEWS: (slug) => `/api/v1/embeds/reviews/${slug}`,
+        GET_WIDGET_DATA: (widgetId) => `/api/v1/embeds/widget/${widgetId}`,
+    },
 }

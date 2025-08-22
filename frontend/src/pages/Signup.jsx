@@ -4,8 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { UserIcon, UserPlusIcon } from "@heroicons/react/16/solid";
-import axiosInstance from "../utils/axiosInstanse";
-import { API_PATHS } from "../utils/apiPaths";
 import { validateEmail } from "../utils/helper";
 
 const Signup = () => {
@@ -14,15 +12,15 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState(null);
-  // const [tenantName,setTenantName] = useState();
+  const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("reviewer"); // State for selected role
-  const [tenantName, setTenantName] = useState(""); // NEW: State for business name
-  const [publicReviewUrl, setPublicReviewUrl] = useState(""); // NEW: State for the public URL slug
+  const [tenantName, setTenantName] = useState(""); // State for business name
+  const [publicReviewUrl, setPublicReviewUrl] = useState(""); // State for the public URL slug
 
-  const { updateUser } = useContext(AuthContext);
+  const { signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // NEW: Function to sanitize the business name for a URL
+  // Function to sanitize the business name for a URL
   const slugify = (text) => {
     return text
       .toString()
@@ -35,7 +33,7 @@ const Signup = () => {
       .replace(/-+$/, ""); // Trim - from end of text
   };
 
-  // NEW: Update the public review URL whenever the business name changes
+  // Update the public review URL whenever the business name changes
   useEffect(() => {
     if (role === "admin") {
       const slug = slugify(tenantName);
@@ -47,53 +45,60 @@ const Signup = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    
     // Check Email Condition
     if (!validateEmail(email)) {
-      setError("Plase enter a valid Email.");
+      setError("Please enter a valid email.");
       return;
     }
 
     // Check Password Condition
     if (!password) {
-      setError("Plase Enter Password.");
+      setError("Please enter password.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
     // Check Name Condition
     if (!name) {
-      setError("Plase Enter Name.");
+      setError("Please enter name.");
       return;
     }
-    if (!tenantName) {
-      setError("Plase Enter Tenant Name.");
-      return;
-    }
-    setError("");
 
-    // Signup API Call
+    if (role === "admin" && !tenantName) {
+      setError("Please enter business name.");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
     try {
-      // if (profilePic) {
-      //   const imgUploadRes = await uploadImage(profilePic);
-      //   profileImageUrl = imgUploadRes.imageUrl || "";
-      // }
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGSITER, {
+      const userData = {
         name,
         email,
         password,
-        tenantName,
-      });
-      const { token, user } = response.data;
-      if (token) {
-        localStorage.setItem("token", token);
-        updateUser(user)
+        ...(role === "admin" && { tenantName }),
+      };
+
+      const result = await signup(userData);
+      if (result.success) {
         navigate("/dashboard");
       }
     } catch (error) {
-      if (error.response && error.response.data.message) {
-        setError(error.response.data.message);
-      } else {
-        setError("Someting went Wronge. Please try again.");
-      }
+      // Error is already handled in AuthContext
+      console.error("Signup error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -110,11 +115,12 @@ const Signup = () => {
           <button
             type="button"
             onClick={() => setRole("admin")}
+            disabled={loading}
             className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${
               role === "admin"
                 ? "border-blue-600 bg-blue-50 text-blue-600"
                 : "border-gray-300 text-gray-600 hover:bg-gray-100"
-            }`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <UserIcon className="h-10 w-10 mb-2" />
             <span className="font-bold">Admin</span>
@@ -125,11 +131,12 @@ const Signup = () => {
           <button
             type="button"
             onClick={() => setRole("reviewer")}
+            disabled={loading}
             className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${
               role === "reviewer"
                 ? "border-blue-600 bg-blue-50 text-blue-600"
                 : "border-gray-300 text-gray-600 hover:bg-gray-100"
-            }`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             <UserPlusIcon className="h-10 w-10 mb-2" />
             <span className="font-bold">Reviewer</span>
@@ -141,7 +148,7 @@ const Signup = () => {
 
         <div className="space-y-4">
           <div>
-            <label className="block  text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700">
               Email Address
             </label>
             <input
@@ -151,10 +158,11 @@ const Signup = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
               required
+              disabled={loading}
             />
           </div>
           <div>
-            <label className="block  text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700">
               Name
             </label>
             <input
@@ -164,6 +172,7 @@ const Signup = () => {
               onChange={(e) => setName(e.target.value)}
               className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
               required
+              disabled={loading}
             />
           </div>
           <div>
@@ -177,10 +186,11 @@ const Signup = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
               required
+              disabled={loading}
             />
           </div>
           <div>
-            <label className="block  text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700">
               Confirm Password
             </label>
             <input
@@ -190,9 +200,10 @@ const Signup = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
               required
+              disabled={loading}
             />
           </div>
-          {/* NEW: Conditional form fields for Admin role */}
+          {/* Conditional form fields for Admin role */}
           {role === "admin" && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -211,10 +222,11 @@ const Signup = () => {
                   type="text"
                   id="tenantName"
                   value={tenantName}
-                  placeholder="Enter your bussines name"
+                  placeholder="Enter your business name"
                   onChange={(e) => setTenantName(e.target.value)}
                   className="mt-1 block w-full py-2 rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
                   required={role === "admin"}
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -248,9 +260,10 @@ const Signup = () => {
         </div>
         <button
           type="submit"
-          className="w-full py-3 px-4 bg-orange-500 text-white font-bold tracking-wide hover:bg-orange-600 transition-colors"
+          disabled={loading}
+          className="w-full py-3 px-4 bg-orange-500 text-white font-bold tracking-wide hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Create Account
+          {loading ? "Creating Account..." : "Create Account"}
         </button>
         {error && <p className="text-red-500 pb-2.5 text-xs">{error}</p>}
       </form>

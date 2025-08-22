@@ -10,7 +10,8 @@ import {
   CogIcon,
   EyeIcon,
   ChartBarIcon,
-  DevicePhoneMobileIcon
+  DevicePhoneMobileIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/16/solid";
 
 const CarouselWidget = () => {

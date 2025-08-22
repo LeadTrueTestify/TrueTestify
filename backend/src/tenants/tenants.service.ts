@@ -14,21 +14,21 @@ export class TenantsService {
     return this.prisma.tenant.update({ where: { id }, data });
   }
 
- async createApiKey(tenantId: string, userId: string) {
-  const raw = `tt_${randomBytes(24).toString('hex')}`;
-  const keyHash = createHash('sha256').update(raw).digest('hex');
+  async createApiKey(tenantId: string, userId: string) {
+    const raw = `tt_${randomBytes(24).toString('hex')}`;
+    const keyHash = createHash('sha256').update(raw).digest('hex');
 
-  const apiKey = await this.prisma.apiKey.create({
-    data: {
-      tenantId,
-      userId, // must exist in User table 
-      keyHash,
-      label: 'Default',
-    },
-  });
+    const apiKey = await this.prisma.apiKey.create({
+      data: {
+        userId,
+        tenantId, // Provide the foreign key directly
+        keyHash,
+        label: 'Default',
+      },
+    });
 
-  return { apiKey: raw, id: apiKey.id };
-}
+    return { apiKey: raw, id: apiKey.id };
+  }
 
 
 }

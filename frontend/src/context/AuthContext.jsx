@@ -19,8 +19,8 @@ const getInitialData = (key, initialValue) => {
 };
 
 const AuthProvider = ({ children }) => {
-  const [tanant,setTanant] = useState("")
-  const [user, setUser] = useState(getInitialData("user", null));
+  const [tenant, setTenant] = useState("");
+  const [user, setUser] = useState("");
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState(
     getInitialData("subscription", {
@@ -34,68 +34,134 @@ const AuthProvider = ({ children }) => {
     getInitialData("billingInfo", null)
   );
 
-  // Simulate a delay for "loading" and check for existing user
+  // Check for existing user and token on app load
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
       const savedUser = getInitialData("user", null);
-      if (savedUser) {
-        setUser(savedUser);
+      
+      if (token && savedUser) {
+        try {
+          // Verify token is still valid by fetching user info
+          const response = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO(savedUser.id));
+          setUser(response.data);
+          
+          // Get tenant information if user has memberships
+          if (response.data.memberships && response.data.memberships.length > 0) {
+            const tenantSlug = response.data.memberships[0].tenant;
+            if (tenantSlug) {
+              setTenant(tenantSlug);
+              await fetchTenantInfo(tenantSlug);
+            }
+          }
+        } catch (error) {
+          console.error("Token validation failed:", error);
+          // Clear invalid token and user data
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setUser(null);
+        }
       }
       setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
+    };
+
+    checkAuth();
   }, []);
+
+  const fetchTenantInfo = async (slug) => {
+    try {
+      const response = await axiosInstance.get(API_PATHS.TENANTS.GET_TENANT_BY_SLUG(slug));
+      // Store tenant info if needed
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch tenant info:", error);
+    }
+  };
 
   // Set The User
   const updateUser = (user) => {
     setUser(user);
+    localStorage.setItem("user", JSON.stringify(user));
   };
   
-  const login = (email, password) => {
-    // Mock login logic
-    const mockUser = {
-      id: email, // Use email as a unique ID for this mock
-      role: email === "admin@test.com" ? "admin" : "reviewer",
-    };
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    setUser(mockUser);
-    toast.success(`Logged in as ${mockUser.role}.`);
+  const login = async (email, password) => {
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password,
+      });
+      
+      const { token, user: userData, tenant: tenantData } = response.data;
+      
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(userData);
+        
+        // Set tenant if available
+        if (tenantData) {
+          setTenant(tenantData.slug);
+        }
+        
+        toast.success("Login successful!");
+        return { success: true, user: userData, tenant: tenantData };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
+      toast.error(errorMessage);
+      throw error;
+    }
   };
 
-  const loginPlateForm = (role, email = null) => {
+  const loginPlatform = async (platform) => {
+    // For platform-specific logins (Shopify, WordPress)
+    // This would typically redirect to OAuth flow
     const mockUser = {
-      id: email || `${role}@truetestify.com`,
-      role: role,
-      businessName: role === "admin" ? "TrueTestify" : null,
-      publicReviewUrl: role === "admin" ? "truetestify" : null,
+      id: `platform_${platform}_${Date.now()}`,
+      role: "admin",
+      businessName: `My ${platform} Store`,
+      publicReviewUrl: `my-${platform}-store`,
     };
+    
     localStorage.setItem("user", JSON.stringify(mockUser));
     setUser(mockUser);
-    toast.success(`Logged in as ${mockUser.role}.`);
+    toast.success(`Connected to ${platform}.`);
+    return mockUser;
   };
 
-  // UPDATED: Now accepts a role, businessName, and publicReviewUrl
-  const signup = (email, password, role, businessName, publicReviewUrl) => {
-    // Mock signup logic
-    const mockUser = {
-      id: email,
-      role: role, // Use the role provided by the user
-      businessName: businessName || null,
-      publicReviewUrl: publicReviewUrl || null,
-    };
-    localStorage.setItem("user", JSON.stringify(mockUser));
-    setUser(mockUser);
-    toast.success(`Account created and logged in! You are a ${mockUser.role}.`);
+  const signup = async (userData) => {
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, userData);
+      
+      const { token, user: newUser, tenant: tenantData } = response.data;
+      
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(newUser);
+        
+        if (tenantData) {
+          setTenant(tenantData.slug);
+        }
+        
+        toast.success("Account created successfully!");
+        return { success: true, user: newUser, tenant: tenantData };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Signup failed. Please try again.";
+      toast.error(errorMessage);
+      throw error;
+    }
   };
 
   const logout = () => {
     try {
-      localStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     } catch (_) {}
     setUser(null);
+    setTenant("");
     setSubscription({ plan: "Starter", status: "inactive", startedAt: null });
     setBillingInfo(null);
-    toast.success("Logged out and cleared local data.");
+    toast.success("Logged out successfully.");
   };
 
   const selectPlan = (planName) => {
@@ -106,7 +172,7 @@ const AuthProvider = ({ children }) => {
     };
     localStorage.setItem("subscription", JSON.stringify(updated));
     setSubscription(updated);
-    toast.success(`${planName} selected. Add billing to activate.`);
+    toast.success(`${planName} plan selected. Add billing to activate.`);
   };
 
   const saveBilling = (info) => {
@@ -158,14 +224,14 @@ const AuthProvider = ({ children }) => {
     signup,
     logout,
     getInitialData,
-    loginPlateForm,
+    loginPlatform,
     subscription,
     billingInfo,
     selectPlan,
     saveBilling,
     hasFeature,
-    setTanant,
-    tanant
+    setTenant,
+    tenant
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
