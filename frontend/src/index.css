@@ -14,3 +14,33 @@ img, video {
 pre {
   overflow-x: auto;
 }
+
+/* Styling for browsers that use WebKit (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Sets the width of the scrollbar */
+  background-color: transparent; /* Makes the scrollbar area transparent */
+}
+
+/* Styles the track (the background) of the scrollbar */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151; /* A dark gray that matches your theme */
+  border-radius: 10px; /* Adds rounded corners to the track */
+}
+
+/* Styles the thumb (the draggable part) of the scrollbar */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6b7280; /* A lighter gray for the thumb */
+  border-radius: 10px; /* Adds rounded corners to the thumb */
+}
+
+/* Changes the color of the thumb when you hover over it */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af; /* A slightly lighter gray on hover */
+}
+
+/* Hide scrollbar for Firefox. */
+/* You can't style individual parts with pseudo-elements in Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* 'auto' or 'thin' */
+  scrollbar-color: #6b7280 #374151; /* thumb color track color */
+}
