@@ -12,6 +12,8 @@ import axiosInstance from "../../utils/axiosInstanse";
 import { API_PATHS } from "../../utils/apiPaths";
 
 const Account = ({ userInfo, business }) => {
+  console.log(userInfo, business);
+  
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [editMode, setEditMode] = useState(false);
@@ -28,7 +30,7 @@ const Account = ({ userInfo, business }) => {
 
     // UPDATE TENANTS API Call
     try {
-      await axiosInstance.patch(API_PATHS.TANANTS.UPDATE_TENANTS(business?.id), {
+      await axiosInstance.patch(API_PATHS.TENANTS.UPDATE_TENANTS(business?.id), {
         name,
         slug,
       });
