@@ -291,9 +291,12 @@ const RecordReview = () => {
       content: mediaType === "text" ? textReview : null,
       publicReviewUrl: businessName || null,
     };
-
+     console.log(newReview);
+     
     const allReviews = getInitialData("reviews", MOCK_REVIEWS);
     const updatedReviews = [...allReviews, newReview];
+    console.log(updatedReviews);
+    
     localStorage.setItem("reviews", JSON.stringify(updatedReviews));
 
     toast.success("Your review has been submitted for moderation!");

@@ -10,13 +10,11 @@ import { SpeakerWaveIcon } from "@heroicons/react/20/solid";
 
 
 
-const Moderation = (userInfo, business) => {
-  const { getInitialData, tenant } = useContext(AuthContext);
+const Moderation = () => {
+  const {  tenant } = useContext(AuthContext);
   const [reviews, setReviews] = useState([]);
   const [selectedReview, setSelectedReview] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log(userInfo?.id);
-  console.log(business);
+  const [isModalOpen, setIsModalOpen] = useState(false);;
   
   const getReviews = async (tenantId) => {
     try{const response = await axiosInstance.get(API_PATHS.REVIEWS.GET_REVIEWS(tenantId));
@@ -31,13 +29,13 @@ const Moderation = (userInfo, business) => {
     
   }, []);
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setReviews(getInitialData('reviews', MOCK_REVIEWS));
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  // useEffect(() => {
+  //   const handleStorageChange = () => {
+  //     setReviews(getInitialData('reviews', MOCK_REVIEWS));
+  //   };
+  //   window.addEventListener('storage', handleStorageChange);
+  //   return () => window.removeEventListener('storage', handleStorageChange);
+  // }, []);
 
   const updateReview = async (id, newStatus) => {
     const updatedReviews = reviews.map(r =>

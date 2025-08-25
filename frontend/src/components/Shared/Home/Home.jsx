@@ -31,7 +31,7 @@ const Home = () => {
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
           <svg className="absolute -top-24 -right-24 w-96 h-96 opacity-20 text-orange-300" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M41.9,-64.5C54.8,-55.8,66.1,-46.5,73.1,-34.7C80.1,-22.8,82.9,-8.5,80.9,4.8C79,18.2,72.4,30.7,64.1,42.3C55.9,53.9,45.9,64.6,33.7,70.6C21.5,76.7,7.2,78,-5.8,76.3C-18.8,74.7,-30.5,70.1,-42,63.6C-53.4,57.1,-64.6,48.7,-71.9,37.5C-79.1,26.3,-82.4,12.1,-83.1,-2.2C-83.8,-16.5,-81.8,-33,-73.9,-45C-66.1,-56.9,-52.4,-64.4,-38.3,-72.1C-24.2,-79.8,-12.1,-87.6,0.1,-87.8C12.3,-88,24.7,-80.6,41.9,-64.5Z" transform="translate(100 100)" /></svg>
         </div>
-        <h1 className="text-4xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight">
+        <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight">
           Transform Customer Feedback Into
           <span className="text-orange-500"> Sales Power</span>
         </h1>

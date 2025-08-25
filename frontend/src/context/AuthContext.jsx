@@ -29,6 +29,7 @@ const AuthProvider = ({ children }) => {
       startedAt: null,
     })
   );
+console.log(tenant);
 
   const [billingInfo, setBillingInfo] = useState(
     getInitialData("billingInfo", null)
@@ -96,10 +97,12 @@ const AuthProvider = ({ children }) => {
       if (token) {
         localStorage.setItem("token", token);
         updateUser(userData);
+        console.log(tenantData);
         
         // Set tenant if available
         if (tenantData) {
-          setTenant(tenantData.slug);
+          setTenant(tenantData);
+          await fetchTenantInfo(tenantData.slug);
         }
         
         toast.success("Login successful!");
@@ -159,8 +162,8 @@ const AuthProvider = ({ children }) => {
     } catch (_) {}
     setUser(null);
     setTenant("");
-    setSubscription({ plan: "Starter", status: "inactive", startedAt: null });
-    setBillingInfo(null);
+    // setSubscription({ plan: "Starter", status: "inactive", startedAt: null });
+    // setBillingInfo(null);
     toast.success("Logged out successfully.");
   };
 
