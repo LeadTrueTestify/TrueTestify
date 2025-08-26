@@ -5,108 +5,92 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class WidgetsService {
   constructor(private prisma: PrismaService) {}
 
-  async widgetFeed(
-    slug: string,
-    layout: 'GRID' | 'CAROUSEL' | 'SPOTLIGHT' | 'WALL' | 'FLOATING_BUBBLE' = 'GRID',
-  ) {
-    const tenant = await this.prisma.tenant.findUnique({ where: { slug } });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+  // Create new widget
+  async createWidget(tenantId: string, dto: any) {
+    return this.prisma.widget.create({
+      data: {
+        tenantId,
+        name: dto.name,
+        layout: dto.layout,
+        themeJson: dto.themeJson ?? {},
+      },
+    });
+  }
+
+  // Update widget
+  async updateWidget(widgetId: string, dto: any) {
+    return this.prisma.widget.update({
+      where: { id: widgetId },
+      data: {
+        name: dto.name,
+        layout: dto.layout,
+        themeJson: dto.themeJson ?? {},
+        isActive: dto.isActive ?? true,
+      },
+    });
+  }
+
+  // Get all widgets for a tenant
+  async listWidgets(tenantId: string) {
+    return this.prisma.widget.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Get widget feed (public)
+  async getWidgetFeed(widgetId: string) {
+    const widget = await this.prisma.widget.findUnique({
+      where: { id: widgetId },
+      include: { tenant: true },
+    });
+
+    if (!widget || !widget.isActive) {
+      throw new NotFoundException('Widget not found or inactive');
+    }
 
     const reviews = await this.prisma.review.findMany({
       where: {
-        tenantId: tenant.id,
-        OR: [
-          {
-            // ✅ Media-only: must have APPROVED media
-            status: 'APPROVED',
-            OR: [{ video: { isNot: null } }, { audio: { isNot: null } }],
-          },
-          {
-            // ✅ Text-only: must have APPROVED text
-            textStatus: 'APPROVED',
-            text: { not: null },
-          },
-        ],
+        tenantId: widget.tenantId,
+        status: 'APPROVED',
       },
       orderBy: { createdAt: 'desc' },
-      take: 50,
       include: { video: true, audio: true },
+      take: 50,
     });
 
     const items = reviews.map((r) => ({
       id: r.id,
-      title: r.title,
       authorName: r.authorName,
-      text: r.textStatus === 'APPROVED' && r.text,
+      text: r.textStatus === 'APPROVED' ? r.text : null,
       videoUrl: r.video?.url,
       audioUrl: r.audio?.url,
       previewUrl: r.previewUrl,
       durationSec: r.durationSec,
     }));
-    // const items = reviews
-    switch (layout) {
-      case 'CAROUSEL':
-        return this.buildCarousel(tenant, items);
-      case 'SPOTLIGHT':
-        return this.buildSpotlight(tenant, items);
-      case 'WALL':
-        return this.buildWall(tenant, items);
-      case 'FLOATING_BUBBLE':
-        return this.buildBubble(tenant, items);
-      case 'GRID':
-      default:
-        return this.buildGrid(tenant, items);
-    }
-  }
 
-  private buildGrid(tenant: any, items: any[]) {
     return {
-      type: 'GRID',
-      tenant: this.tenantMeta(tenant),
+      widget: {
+        id: widget.id,
+        name: widget.name,
+        layout: widget.layout,
+        themeJson: widget.themeJson,
+      },
+      tenant: {
+        name: widget.tenant.name,
+        logoUrl: widget.tenant.logoUrl,
+        brandPrimaryHex: widget.tenant.brandPrimaryHex,
+        brandAccentHex: widget.tenant.brandAccentHex,
+      },
       items,
     };
   }
 
-  private buildCarousel(tenant: any, items: any[]) {
-    return {
-      type: 'CAROUSEL',
-      tenant: this.tenantMeta(tenant),
-      items, // frontend will render as horizontal slider
-    };
-  }
-
-  private buildSpotlight(tenant: any, items: any[]) {
-    return {
-      type: 'SPOTLIGHT',
-      tenant: this.tenantMeta(tenant),
-      featured: items[0] || null, // show first one as spotlight
-      others: items.slice(1),
-    };
-  }
-
-  private buildWall(tenant: any, items: any[]) {
-    return {
-      type: 'WALL',
-      tenant: this.tenantMeta(tenant),
-      items, // frontend will render as masonry / continuous wall
-    };
-  }
-
-  private buildBubble(tenant: any, items: any[]) {
-    return {
-      type: 'FLOATING_BUBBLE',
-      tenant: this.tenantMeta(tenant),
-      featured: items[0] || null,
-      count: items.length,
-    };
-  }
-
-  private tenantMeta(tenant: any) {
-    return {
-      name: tenant.name,
-      logoUrl: tenant.logoUrl,
-      brandPrimaryHex: tenant.brandPrimaryHex,
-      brandAccentHex: tenant.brandAccentHex,
-    };
+  // Toggle widget active/inactive
+  async toggleWidget(widgetId: string, isActive: boolean) {
+    return this.prisma.widget.update({
+      where: { id: widgetId },
+      data: { isActive },
+    });
   }
 }

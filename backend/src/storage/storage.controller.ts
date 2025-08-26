@@ -48,9 +48,12 @@ export class StorageController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: ServerUploadDto,
   ) {
-    
-    const safeFileName = this.s3.sanitizeFileName(dto.filename,file);
+    if (!file) {
+      throw new Error('File is required');
+    }
+    const safeFileName = this.s3.sanitizeFileName(dto.filename, file);
     const key = this.s3.buildKey(dto.type, safeFileName);
+
     const url = await this.s3.uploadBuffer(
       key,
       file.buffer,

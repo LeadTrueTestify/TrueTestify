@@ -15,7 +15,7 @@ import { API_PATHS } from "../../utils/apiPaths";
 
 const WidgetSettings = ({ business }) => {
   const navigate = useNavigate();
-  const { getInitialData } = useContext(AuthContext);
+  const { getInitialData ,tenant } = useContext(AuthContext);
   const [widgetConfig, setWidgetConfig] = useState(
     getInitialData("widgetConfig", {
       layout: "carousel",
@@ -24,7 +24,7 @@ const WidgetSettings = ({ business }) => {
       accentColor: "#ef7c00", // TrueTestify orange
     })
   );
-  console.log(business);
+  console.log(tenant);
 
   const handleConfigChange = async (key, value) => {
     const newConfig = { ...widgetConfig, [key]: value };
@@ -48,19 +48,18 @@ const WidgetSettings = ({ business }) => {
       feature: "layout_floating_bubble",
     },
   ];
-  console.log(layouts);
   const themes = [
     { name: "Light", value: "light", icon: <SunIcon className="h-5 w-5" /> },
     { name: "Dark", value: "dark", icon: <MoonIcon className="h-5 w-5" /> },
   ];
 
   const { user } = useContext(AuthContext);
-
+  
   const shortcode = `[truetestify_widget layout="${widgetConfig.layout}" theme="${widgetConfig.theme}"]`;
   const publicReviewBaseUrl =
     typeof window !== "undefined" ? window.location.origin : "";
-  const businessSlug = user?.publicReviewUrl || "your-business";
-  const publicRecordUrl = `${publicReviewBaseUrl}/record/${business?.slug}`;
+  const businessSlug = tenant?.slug || "your-business";
+  const publicRecordUrl = `${publicReviewBaseUrl}/record/${tenant?.slug}`;
 
   const [qrDataUrl, setQrDataUrl] = useState("");
 
