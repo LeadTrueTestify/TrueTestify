@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEmail, IsBoolean, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsNumber } from 'class-validator';
 
 export class CreateReviewDto {
   @IsString()
@@ -6,33 +6,28 @@ export class CreateReviewDto {
 
   @IsString()
   authorName: string;
-
-  @IsEmail()
+  
+  @IsString()
   authorEmail: string;
 
   @IsBoolean()
   consent: boolean;
 
-  // --- Media ---
-  @IsOptional()
-  @IsString()
-  videoS3Key?: string;
-
-  @IsOptional()
-  @IsString()
-  audioS3Key?: string;
-
-  // --- Text Review ---
-  @IsOptional()
-  @IsString()
-  text?: string;
-
-  // --- Metadata ---
   @IsOptional()
   @IsNumber()
   durationSec?: number;
 
   @IsOptional()
   @IsString()
+  text?: string;
+
+  @IsOptional()
   previewUrl?: string;
+
+  // Instead of pre-providing keys, let’s allow actual file uploads
+  @IsOptional()
+  videoFile?: Express.Multer.File;
+
+  @IsOptional()
+  audioFile?: Express.Multer.File;
 }

@@ -38,7 +38,7 @@ const PublicReviews = ({ isPreview = false, layout: initialLayout }) => {
   const brandPrimaryColor = localStorage.getItem('brandPrimaryColor') ? JSON.parse(localStorage.getItem('brandPrimaryColor')) : null;
 
   // Determine layout: use prop, or fallback to 'carousel' for direct usage
-  const layout = initialLayout || 'carousel';
+  const layout = initialLayout || 'grid';
 
   return (
     <div className="p-8 bg-white shadow-sm border border-gray-200">

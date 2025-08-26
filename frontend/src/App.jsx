@@ -95,7 +95,7 @@ function App() {
               element={<QRCodeCollection />}
             />
             <Route
-              path="/public-reviews/:businessName"
+              path="/:businessName"
               element={<PublicReviews />}
             />
 

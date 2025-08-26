@@ -29,7 +29,6 @@ const AuthProvider = ({ children }) => {
       startedAt: null,
     })
   );
-console.log(tenant);
 
   const [billingInfo, setBillingInfo] = useState(
     getInitialData("billingInfo", null)
@@ -40,15 +39,20 @@ console.log(tenant);
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
       const savedUser = getInitialData("user", null);
-      
+
       if (token && savedUser) {
         try {
           // Verify token is still valid by fetching user info
-          const response = await axiosInstance.get(API_PATHS.AUTH.GET_USER_INFO(savedUser.id));
+          const response = await axiosInstance.get(
+            API_PATHS.AUTH.GET_USER_INFO(savedUser.id)
+          );
           setUser(response.data);
-          
+
           // Get tenant information if user has memberships
-          if (response.data.memberships && response.data.memberships.length > 0) {
+          if (
+            response.data.memberships &&
+            response.data.memberships.length > 0
+          ) {
             const tenantSlug = response.data.memberships[0].tenant;
             if (tenantSlug) {
               setTenant(tenantSlug);
@@ -71,7 +75,9 @@ console.log(tenant);
 
   const fetchTenantInfo = async (slug) => {
     try {
-      const response = await axiosInstance.get(API_PATHS.TENANTS.GET_TENANT_BY_SLUG(slug));
+      const response = await axiosInstance.get(
+        API_PATHS.TENANTS.GET_TENANT_BY_SLUG(slug)
+      );
       // Store tenant info if needed
       return response.data;
     } catch (error) {
@@ -84,32 +90,32 @@ console.log(tenant);
     setUser(user);
     localStorage.setItem("user", JSON.stringify(user));
   };
-  
+
   const login = async (email, password) => {
     try {
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
         email,
         password,
       });
-      
+
       const { token, user: userData, tenant: tenantData } = response.data;
-      
+
       if (token) {
         localStorage.setItem("token", token);
         updateUser(userData);
-        console.log(tenantData);
-        
+
         // Set tenant if available
         if (tenantData) {
           setTenant(tenantData);
           await fetchTenantInfo(tenantData.slug);
         }
-        
+
         toast.success("Login successful!");
         return { success: true, user: userData, tenant: tenantData };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Login failed. Please try again.";
+      const errorMessage =
+        error.response?.data?.message || "Login failed. Please try again.";
       toast.error(errorMessage);
       throw error;
     }
@@ -124,7 +130,7 @@ console.log(tenant);
       businessName: `My ${platform} Store`,
       publicReviewUrl: `my-${platform}-store`,
     };
-    
+
     localStorage.setItem("user", JSON.stringify(mockUser));
     setUser(mockUser);
     toast.success(`Connected to ${platform}.`);
@@ -133,23 +139,27 @@ console.log(tenant);
 
   const signup = async (userData) => {
     try {
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, userData);
-      
+      const response = await axiosInstance.post(
+        API_PATHS.AUTH.REGISTER,
+        userData
+      );
+
       const { token, user: newUser, tenant: tenantData } = response.data;
-      
+
       if (token) {
         localStorage.setItem("token", token);
         updateUser(newUser);
-        
+
         if (tenantData) {
           setTenant(tenantData.slug);
         }
-        
+
         toast.success("Account created successfully!");
         return { success: true, user: newUser, tenant: tenantData };
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Signup failed. Please try again.";
+      const errorMessage =
+        error.response?.data?.message || "Signup failed. Please try again.";
       toast.error(errorMessage);
       throw error;
     }
@@ -234,7 +244,7 @@ console.log(tenant);
     saveBilling,
     hasFeature,
     setTenant,
-    tenant
+    tenant,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
