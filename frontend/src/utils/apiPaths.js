@@ -28,11 +28,10 @@ export const API_PATHS = {
   },
   WIDGETS: {
     CREATE_WIDGET: (tenantId) => `/widgets/${tenantId}`,
-    GET_WIDGET: (tenantId) => `/widgets/tenant/${tenantId}`,
     UPDATE_WIDGET: (widgetId) => `/widgets/${widgetId}`,
+    LIST_WIDGETS: (tenantId) => `/widgets/tenant/${tenantId}`,
+    FEED: (widgetId) => `/widgets/feed/${widgetId}`,
     TOGGLE_WIDGET: (widgetId) => `/widgets/${widgetId}/toggle`,
-    PUBLIC_REVIEWS_WIDGET: (widgetId) => `/widgets/feed/${widgetId}`,
-    GET_WIDGET_EMBED_CODE: (id) => `/api/v1/widgets/${id}/embed`,
   },
   ANALYTICS: {
     GET_ANALYTICS: (tenantId) => `/api/v1/analytics/tenant/${tenantId}`,
