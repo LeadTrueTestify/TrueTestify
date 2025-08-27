@@ -1,17 +1,17 @@
 -- CreateEnum
-CREATE TYPE "public"."Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
-
--- CreateEnum
-CREATE TYPE "public"."ReviewStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'HIDDEN');
-
--- CreateEnum
-CREATE TYPE "public"."WidgetLayout" AS ENUM ('GRID', 'CAROUSEL', 'SPOTLIGHT', 'FLOATING_BUBBLE');
-
--- CreateEnum
 CREATE TYPE "public"."IntegrationKind" AS ENUM ('SHOPIFY', 'WORDPRESS');
 
 -- CreateEnum
 CREATE TYPE "public"."BillingState" AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELED', 'UNPAID_HIDDEN', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "public"."Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER', 'VIEWER');
+
+-- CreateEnum
+CREATE TYPE "public"."ReviewStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'HIDDEN', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "public"."WidgetLayout" AS ENUM ('GRID', 'CAROUSEL', 'SPOTLIGHT', 'FLOATING_BUBBLE');
 
 -- CreateTable
 CREATE TABLE "public"."User" (
@@ -35,6 +35,7 @@ CREATE TABLE "public"."Tenant" (
     "brandAccentHex" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "allowTextReviews" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Tenant_pkey" PRIMARY KEY ("id")
 );
@@ -81,6 +82,21 @@ CREATE TABLE "public"."VideoAsset" (
 );
 
 -- CreateTable
+CREATE TABLE "public"."AudioAsset" (
+    "id" TEXT NOT NULL,
+    "tenantId" TEXT NOT NULL,
+    "s3Key" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "sizeBytes" BIGINT NOT NULL,
+    "width" INTEGER,
+    "height" INTEGER,
+    "format" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AudioAsset_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."Review" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -91,6 +107,9 @@ CREATE TABLE "public"."Review" (
     "consent" BOOLEAN NOT NULL DEFAULT false,
     "status" "public"."ReviewStatus" NOT NULL DEFAULT 'PENDING',
     "videoId" TEXT,
+    "audioId" TEXT,
+    "text" TEXT,
+    "textStatus" TEXT NOT NULL DEFAULT 'PENDING',
     "previewUrl" TEXT,
     "durationSec" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -203,6 +222,9 @@ CREATE UNIQUE INDEX "Membership_tenantId_userId_key" ON "public"."Membership"("t
 CREATE UNIQUE INDEX "VideoAsset_s3Key_key" ON "public"."VideoAsset"("s3Key");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "AudioAsset_s3Key_key" ON "public"."AudioAsset"("s3Key");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "BillingAccount_tenantId_key" ON "public"."BillingAccount"("tenantId");
 
 -- CreateIndex
@@ -230,6 +252,9 @@ ALTER TABLE "public"."Widget" ADD CONSTRAINT "Widget_tenantId_fkey" FOREIGN KEY 
 ALTER TABLE "public"."VideoAsset" ADD CONSTRAINT "VideoAsset_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "public"."AudioAsset" ADD CONSTRAINT "AudioAsset_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."Review" ADD CONSTRAINT "Review_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -237,6 +262,9 @@ ALTER TABLE "public"."Review" ADD CONSTRAINT "Review_widgetId_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "public"."Review" ADD CONSTRAINT "Review_videoId_fkey" FOREIGN KEY ("videoId") REFERENCES "public"."VideoAsset"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Review" ADD CONSTRAINT "Review_audioId_fkey" FOREIGN KEY ("audioId") REFERENCES "public"."AudioAsset"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."BillingAccount" ADD CONSTRAINT "BillingAccount_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "public"."Tenant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
