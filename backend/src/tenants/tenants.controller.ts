@@ -17,28 +17,30 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class TenantsController {
   constructor(private svc: TenantsService) {}
 
-  @Get(':slug') 
+  @Get(':slug')
   getBySlug(@Param('slug') slug: string) {
     return this.svc.getBySlug(slug);
   }
 
-  @Get('slug/:slug') 
+  @Get('slug/:slug')
   getTenantBySlug(@Param('slug') slug: string) {
     return this.svc.getBySlug(slug);
   }
 
-  @Patch(':id') 
+  @Patch(':id')
   update(@Param('id') id: string, @Body() body: any) {
     return this.svc.update(id, body);
   }
 
-  @Post(':id/api-keys')
-// @UseGuards(JwtAuthGuard)
-createApiKey(@Param('id') tenantId: string, @Req() req) {
-  console.log('req.user:', req.user); // Add this line to debug
-  if (!req.user || !req.user.id) {
-    throw new UnauthorizedException('User is not authenticated or user ID is missing.');
+@Post(':id/api-keys') // Add this line to protect the route
+  async createApiKey(@Param('id') tenantId: string, @Req() req) {
+    // The `req.user` object is now guaranteed to exist and contain `userId`
+    // because of the `@UseGuards` decorator.
+    if (!req.user || !req.user.userId) {
+      throw new UnauthorizedException('User is not authenticated or user ID is missing.');
+    }
+    
+    // Pass the correct user ID to the service.
+    return this.svc.createApiKey(tenantId, req.user.userId);
   }
-  return this.svc.createApiKey(tenantId, req.user.id);
-}
 }

@@ -40,10 +40,9 @@ const WidgetSettings = ({ business }) => {
   const layouts = [
     { name: "Carousel", value: "CAROUSEL", feature: "layout_carousel" },
     { name: "Grid", value: "GRID", feature: "layout_grid" },
-    { name: "Wall", value: "WALL", feature: "layout_wall" },
     { name: "Spotlight", value: "SPOTLIGHT", feature: "layout_spotlight" },
     {
-      name: "Floating_bubble",
+      name: "Floating",
       value: "FLOATING_BUBBLE",
       feature: "layout_floating_bubble",
     },

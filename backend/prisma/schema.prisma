@@ -7,6 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum IntegrationKind {
+  SHOPIFY
+  WORDPRESS
+}
+
+enum BillingState {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID_HIDDEN
+  DELETED
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  HIDDEN
+  DELETED
+}
+
+enum WidgetLayout {
+  GRID
+  CAROUSEL
+  SPOTLIGHT
+  FLOATING_BUBBLE
+}
+
 model User {
   id           String       @id @default(cuid())
   email        String       @unique
@@ -50,41 +85,6 @@ model Membership {
   user      User     @relation(fields: [userId], references: [id])
 
   @@unique([tenantId, userId])
-}
-
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
-
-enum ReviewStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  HIDDEN
-  DELETED
-}
-
-enum WidgetLayout {
-  GRID
-  CAROUSEL
-  SPOTLIGHT
-  FLOATING_BUBBLE
-}
-
-enum IntegrationKind {
-  SHOPIFY
-  WORDPRESS
-}
-
-enum BillingState {
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  UNPAID_HIDDEN
-  DELETED
 }
 
 model Widget {
@@ -143,12 +143,12 @@ model Review {
   textStatus  String       @default("PENDING")
   previewUrl  String?
   durationSec Int?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  tenant      Tenant      @relation(fields: [tenantId], references: [id])
-  widget      Widget?     @relation(fields: [widgetId], references: [id])
-  video       VideoAsset? @relation(fields: [videoId], references: [id])
-  audio       AudioAsset? @relation(fields: [audioId], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  widget      Widget?      @relation(fields: [widgetId], references: [id])
+  video       VideoAsset?  @relation(fields: [videoId], references: [id])
+  audio       AudioAsset?  @relation(fields: [audioId], references: [id])
 }
 
 model BillingAccount {
