@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Patch, UseGuards, NotFoundException } from '@nestjs/common';
 import { WidgetsService } from './widgets.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
@@ -20,17 +20,28 @@ export class WidgetsController {
     return this.svc.updateWidget(widgetId, body);
   }
 
-  // 🔒 List all widgets for tenant
+  // 🔒 List all widgets for a tenant
   @UseGuards(JwtAuthGuard)
   @Get('tenant/:tenantId')
   listWidgets(@Param('tenantId') tenantId: string) {
     return this.svc.listWidgets(tenantId);
   }
 
-  // 🌍 Public widget feed (no auth required)
-  @Get('feed/:widgetId')
-  getWidgetFeed(@Param('widgetId') widgetId: string) {
-    return this.svc.getWidgetFeed(widgetId);
+  // 🔒 Get a single widget's configuration
+  @UseGuards(JwtAuthGuard)
+  @Get(':widgetId')
+  async getWidgetById(@Param('widgetId') widgetId: string) {
+    const widget = await this.svc.getWidgetById(widgetId);
+    if (!widget) {
+      throw new NotFoundException('Widget not found');
+    }
+    return widget;
+  }
+
+  // 🌍 Public widget feed based on tenant slug (no auth required)
+  @Get('feed/:tenantSlug')
+  getWidgetFeed(@Param('tenantSlug') tenantSlug: string) {
+    return this.svc.getWidgetFeed(tenantSlug);
   }
 
   // 🔒 Activate/Deactivate widget

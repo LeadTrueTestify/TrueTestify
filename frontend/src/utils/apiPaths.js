@@ -34,13 +34,8 @@ export const API_PATHS = {
     TOGGLE_WIDGET: (widgetId) => `/widgets/${widgetId}/toggle`,
   },
   ANALYTICS: {
-    GET_ANALYTICS: (tenantId) => `/api/v1/analytics/tenant/${tenantId}`,
-    GET_WIDGET_VIEWS: (widgetId) =>
-      `/api/v1/analytics/widget/${widgetId}/views`,
-    GET_REVIEW_STATS: (tenantId) =>
-      `/api/v1/analytics/tenant/${tenantId}/reviews`,
-    TRACK_WIDGET_VIEW: (widgetId) =>
-      `/api/v1/analytics/widget/${widgetId}/view`,
+    GET_USAGE: (tenantId) => `/usage/${tenantId}/snapshot`,
+    VIEWS: (reviewId) => `/usage/reviews/${reviewId}/view`,
   },
   BILLING: {
     GET_BILLING_ACCOUNT: (tenantId) => `/api/v1/billing/tenant/${tenantId}`,

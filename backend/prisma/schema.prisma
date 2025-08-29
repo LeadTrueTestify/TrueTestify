@@ -88,16 +88,17 @@ model Membership {
 }
 
 model Widget {
-  id        String       @id @default(cuid())
-  tenantId  String
-  name      String
-  layout    WidgetLayout
-  themeJson Json?
-  isActive  Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  tenant    Tenant       @relation(fields: [tenantId], references: [id])
-  reviews   Review[]
+  id         String       @id @default(cuid())
+  tenantId   String
+  name       String
+  viewsCount Int          @default(0)
+  layout     WidgetLayout
+  themeJson  Json?
+  isActive   Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  tenant     Tenant       @relation(fields: [tenantId], references: [id])
+  reviews    Review[]
 }
 
 model VideoAsset {
@@ -135,6 +136,7 @@ model Review {
   title       String?
   authorName  String?
   authorEmail String?
+  viewsCount  Int          @default(0)
   consent     Boolean      @default(false)
   status      ReviewStatus @default(PENDING)
   videoId     String?

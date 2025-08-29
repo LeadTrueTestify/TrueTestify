@@ -7,132 +7,168 @@ import {
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { useContext, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import axiosInstance from "../../utils/axiosInstanse";
 import { API_PATHS } from "../../utils/apiPaths";
 
 const Account = ({ userInfo, business }) => {
-  console.log(userInfo, business);
-  
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
+  const [name, setName] = useState(business?.name || "");
+  const [slug, setSlug] = useState(business?.slug || "");
   const [editMode, setEditMode] = useState(false);
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // TOGGLE EDIT MODE
   const editToggle = () => {
+    if (!editMode) {
+      setName(business?.name || "");
+      setSlug(business?.slug || "");
+    }
     setEditMode(!editMode);
   };
-  //  UPDATE SUBMIT HANLDER
+
   const handleUpdate = async (e) => {
     e.preventDefault();
-
-    // UPDATE TENANTS API Call
     try {
       await axiosInstance.patch(API_PATHS.TENANTS.UPDATE_TENANTS(business?.id), {
         name,
         slug,
       });
-      setEditMode(false)
+      setEditMode(false);
+      toast.success("Account updated successfully.");
     } catch (error) {
-      if (error.response && error.response.data.message) {
-        // setError(error.response.data.message);
-      } else {
-        setError("Someting went Wronge. Please try again.");
-      }
+      toast.error("Something went wrong. Please try again.");
     }
   };
+
+  // Animation variants
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2, ease: "easeIn" } },
+  };
+
   return (
-    <div className="max-w-md mx-auto mt-10 mb-10 bg-white p-8 border border-gray-200 text-center">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">My Account</h2>
-      <div className="space-y-4 text-left">
-        <button className="w-20 flex items-center gap-1" onClick={editToggle}>
-          <span className="font-semibold">Edit</span>
-          <WrenchScrewdriverIcon className="h-4 w-4 text-orange-500" />
-        </button>
-        {editMode ? (
-          <>
-            <form onSubmit={handleUpdate} className="space-y-6">
-              <div className="flex justify-center space-x-4">
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4 pt-4 border-t border-gray-200"
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Page Title */}
+      <h2 className="text-3xl font-bold text-gray-800 text-center">My Account</h2>
+
+      {/* Account Info Card */}
+      <div className="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
+        <AnimatePresence mode="wait">
+          {!editMode ? (
+            <motion.div
+              key="view-mode"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={itemVariants}
+              className="space-y-5"
+            >
+              {/* Name Row */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div className="flex items-center space-x-3">
+                  <UserIcon className="h-6 w-6 text-orange-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Full Name</p>
+                    <p className="font-semibold text-gray-800">{business?.name}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={editToggle}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 text-sm font-medium rounded-md hover:bg-orange-100 transition-colors"
                 >
-                  <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">
-                    <label className="block  text-sm font-medium text-gray-700">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      value={name}
-                      placeholder="Enter Name"
-                      onChange={(e) => setName(e.target.value)}
-                      className="mt-1 pl-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">
-                    <label
-                      htmlFor="slug"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Business Name
-                    </label>
-                    <input
-                      type="text"
-                      id="slug"
-                      value={slug}
-                      placeholder="Enter your bussines name"
-                      onChange={(e) => setSlug(e.target.value)}
-                      className="mt-1 pl-1 block w-full py-2 rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                    />
-                  </div>
-                </motion.div>
+                  <WrenchScrewdriverIcon className="h-4 w-4" />
+                  Edit
+                </button>
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 px-4 bg-orange-500 text-white font-bold tracking-wide hover:bg-orange-600 transition-colors"
-              >
-                Update
-              </button>
-              {/* {error && <p className="text-red-500 pb-2.5 text-xs">{error}</p>} */}
-            </form>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">
-              <UserIcon className="h-6 w-6 text-orange-500" />
-              <p className="text-gray-700">
-                Name: <span className="font-semibold">{business?.name}</span>
-              </p>
-            </div>
-            <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">
-              <ShieldCheckIcon className="h-6 w-6 text-orange-500" />
-              <p className="text-gray-700">
-                Business Name:{" "}
-                <span className="font-semibold">{business?.slug}</span>
-              </p>
-            </div>
-          </>
-        )}
-        <div className="flex items-center space-x-3 bg-gray-50 p-4 border border-gray-200">
-          <CogIcon className="h-6 w-6 text-orange-500" />
-          <p className="text-gray-700">
-            Account ID: <span className="font-semibold">{userInfo?.email}</span>
-          </p>
-        </div>
+
+              {/* Business Name Row */}
+              <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div className="flex items-center space-x-3">
+                  <ShieldCheckIcon className="h-6 w-6 text-orange-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Business Name</p>
+                    <p className="font-semibold text-gray-800">{business?.slug}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Account ID Row */}
+              <div className="flex items-center p-4 bg-gray-50 border border-gray-200 rounded-md">
+                <div className="flex items-center space-x-3">
+                  <CogIcon className="h-6 w-6 text-orange-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Account ID</p>
+                    <p className="font-semibold text-gray-800 truncate max-w-xs">{userInfo?.email}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.form
+              key="edit-mode"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={itemVariants}
+              onSubmit={handleUpdate}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="Enter business name"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 px-4 bg-orange-500 text-white font-medium rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
+                >
+                  Update
+                </button>
+                <button
+                  type="button"
+                  onClick={editToggle}
+                  className="px-4 py-2.5 bg-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
       </div>
-      <button
-        onClick={() => {
-          logout();
-          navigate("/");
-        }}
-        className="mt-8 w-full py-3 bg-red-600 text-white font-bold tracking-wide transition-colors hover:bg-red-700"
-      >
-        Logout
-      </button>
+
+      {/* Logout Section */}
+      <div className="bg-white p-6 border border-gray-200 rounded-lg shadow-sm text-center">
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          className="w-full py-3 px-6 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 };

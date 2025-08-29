@@ -77,6 +77,14 @@ const Sidebar = ({ setIsSidebarOpen }) => {
               onClick={() => setIsSidebarOpen(false)}
             />
           </li>
+          <li className="mb-2">
+            <NavLink
+              to="/dashboard/account"
+              icon={<UserIcon className="h-5 w-5" />}
+              label="Account"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          </li>
           {user ? (
             <>
               <NavLink

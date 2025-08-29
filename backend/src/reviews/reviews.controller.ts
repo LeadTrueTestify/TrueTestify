@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -118,4 +119,5 @@ export class ReviewsController {
   list(@Param('tenantSlug') slug: string, @Query('status') status?: string) {
     return this.svc.list(slug, status);
   }
+  
 }

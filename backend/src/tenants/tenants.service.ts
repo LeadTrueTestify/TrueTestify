@@ -6,8 +6,8 @@ import { randomBytes, createHash } from 'crypto';
 export class TenantsService {
   constructor(private prisma: PrismaService) {}
 
-  async getBySlug(slug: string) {
-    const findSlug = await this.prisma.tenant.findUnique({ where: { slug } });
+  async getBySlug(id: string) {
+    const findSlug = await this.prisma.tenant.findUnique({ where: { id } });
     if (!findSlug) throw new BadRequestException('Tenant not found');
     return findSlug;
   }
