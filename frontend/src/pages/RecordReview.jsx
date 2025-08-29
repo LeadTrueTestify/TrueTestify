@@ -32,7 +32,7 @@ const RecordReview = () => {
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [allowTextReviews, setAllowTextReviews] = useState(
-    getInitialData("allowTextReviews", true)
+    getInitialData("allowTextReviews", false)
   );
   const [allowTextGoogleReviews, setAllowTextGoogleReviews] = useState(
     getInitialData("allowTextGoogleReviews", false)

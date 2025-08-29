@@ -19,7 +19,6 @@ const Navbar = () => {
   const navLinks = user
     ? user && [
         { name: "Dashboard", href: "/dashboard/moderation", isPrimary: true },
-        { name: "Account", href: "/account", isPrimary: false },
       ]
     : [
         { name: "Log In", href: "/login", isPrimary: false },

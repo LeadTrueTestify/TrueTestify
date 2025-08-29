@@ -29,10 +29,29 @@ const AuthProvider = ({ children }) => {
       startedAt: null,
     })
   );
-
   const [billingInfo, setBillingInfo] = useState(
     getInitialData("billingInfo", null)
   );
+  // New state variables for widgets
+  const [widgets, setWidgets] = useState([]);
+  const [selectedWidget, setSelectedWidget] = useState(null);
+
+  // New function to fetch widgets and set state
+  const fetchWidgets = async (tenantId) => {
+    if (!tenantId) return;
+    try {
+      const response = await axiosInstance.get(
+        API_PATHS.WIDGETS.LIST_WIDGETS(tenantId)
+      );
+      setWidgets(response.data);
+      if (response.data.length > 0) {
+        setSelectedWidget(response.data); // Select the first widget by default
+      }
+    } catch (error) {
+      toast.error("Failed to fetch widgets.");
+      console.error("Error fetching widgets:", error);
+    }
+  };
 
   // Check for existing user and token on app load
   useEffect(() => {
@@ -53,10 +72,14 @@ const AuthProvider = ({ children }) => {
             response.data.memberships &&
             response.data.memberships.length > 0
           ) {
-            const tenantSlug = response.data.memberships[0].tenant;
-            if (tenantSlug) {
-              setTenant(tenantSlug);
-              await fetchTenantInfo(tenantSlug);
+            const tenantId = response.data.memberships[0].tenantId; 
+            console.log(tenantId);
+            // Assuming tenantId is now part of memberships
+            if (tenantId) {
+              const tenantData = await fetchTenantInfo(tenantId);
+              setTenant(tenantData);
+              // After tenant info is fetched, fetch widgets
+              fetchWidgets(tenantData?.id);
             }
           }
         } catch (error) {
@@ -69,16 +92,15 @@ const AuthProvider = ({ children }) => {
       }
       setLoading(false);
     };
-
     checkAuth();
   }, []);
 
-  const fetchTenantInfo = async (slug) => {
+  const fetchTenantInfo = async (tenantId) => {
     try {
+      // Correcting the API path
       const response = await axiosInstance.get(
-        API_PATHS.TENANTS.GET_TENANT_BY_SLUG(slug)
+        API_PATHS.TENANTS.GET_TENANTS(tenantId)
       );
-      // Store tenant info if needed
       return response.data;
     } catch (error) {
       console.error("Failed to fetch tenant info:", error);
@@ -107,7 +129,7 @@ const AuthProvider = ({ children }) => {
         // Set tenant if available
         if (tenantData) {
           setTenant(tenantData);
-          await fetchTenantInfo(tenantData.slug);
+          await fetchWidgets(tenantData.id);
         }
 
         toast.success("Login successful!");
@@ -122,8 +144,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const loginPlatform = async (platform) => {
-    // For platform-specific logins (Shopify, WordPress)
-    // This would typically redirect to OAuth flow
     const mockUser = {
       id: `platform_${platform}_${Date.now()}`,
       role: "admin",
@@ -151,7 +171,8 @@ const AuthProvider = ({ children }) => {
         updateUser(newUser);
 
         if (tenantData) {
-          setTenant(tenantData.slug);
+          setTenant(tenantData);
+          await fetchWidgets(tenantData.id);
         }
 
         toast.success("Account created successfully!");
@@ -172,8 +193,8 @@ const AuthProvider = ({ children }) => {
     } catch (_) {}
     setUser(null);
     setTenant("");
-    // setSubscription({ plan: "Starter", status: "inactive", startedAt: null });
-    // setBillingInfo(null);
+    setWidgets([]);
+    setSelectedWidget(null);
     toast.success("Logged out successfully.");
   };
 
@@ -226,7 +247,7 @@ const AuthProvider = ({ children }) => {
 
   const hasFeature = (feature) => {
     const plan = subscription?.plan || "Starter";
-    return planFeatures[plan]?.has(feature) || false;
+    return planFeatures[plan]?.has(feature) || true;
   };
 
   const value = {
@@ -245,6 +266,12 @@ const AuthProvider = ({ children }) => {
     hasFeature,
     setTenant,
     tenant,
+    // Provide the new state and functions here
+    widgets,
+    setWidgets,
+    selectedWidget,
+    setSelectedWidget,
+    fetchWidgets,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

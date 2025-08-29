@@ -17,9 +17,9 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class TenantsController {
   constructor(private svc: TenantsService) {}
 
-  @Get(':slug')
-  getBySlug(@Param('slug') slug: string) {
-    return this.svc.getBySlug(slug);
+  @Get(':id')
+  getBySlug(@Param('id') id: string) {
+    return this.svc.getBySlug(id);
   }
 
   @Get('slug/:slug')

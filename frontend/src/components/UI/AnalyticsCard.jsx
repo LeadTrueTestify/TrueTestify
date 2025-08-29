@@ -6,13 +6,7 @@ const AnalyticsCard = ({ title, value, icon, color }) => (
       <h3 className="text-lg text-gray-500">{title}</h3>
       <p className="text-3xl font-bold text-gray-800">{value}</p>
     </div>
-    <div
-      className={`p-3 border-2 ${
-        color === "blue"
-          ? "border-blue-500 text-blue-500"
-          : "border-orange-500 text-orange-500"
-      }`}
-    >
+    <div className={`p-3 border-2 border-${color}-500 text-${color}-500`}>
       {icon}
     </div>
   </div>

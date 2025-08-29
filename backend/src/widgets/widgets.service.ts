@@ -13,6 +13,7 @@ export class WidgetsService {
         name: dto.name,
         layout: dto.layout,
         themeJson: dto.themeJson ?? {},
+        isActive: dto.isActive ?? true,
       },
     });
   }
@@ -25,7 +26,7 @@ export class WidgetsService {
         name: dto.name,
         layout: dto.layout,
         themeJson: dto.themeJson ?? {},
-        isActive: dto.isActive ?? true,
+        isActive: dto.isActive,
       },
     });
   }
@@ -35,23 +36,44 @@ export class WidgetsService {
     return this.prisma.widget.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
+      include: { tenant: true }, // Include tenant data to get the slug
+    });
+  }
+
+  // Get a single widget by ID
+  async getWidgetById(widgetId: string) {
+    return this.prisma.widget.findUnique({
+      where: { id: widgetId },
+      include: { tenant: true }, // Include tenant data
     });
   }
 
   // Get widget feed (public)
-  async getWidgetFeed(widgetId: string) {
-    const widget = await this.prisma.widget.findUnique({
-      where: { id: widgetId },
-      include: { tenant: true },
+  async getWidgetFeed(tenantSlug: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { slug: tenantSlug },
     });
 
-    if (!widget || !widget.isActive) {
-      throw new NotFoundException('Widget not found or inactive');
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    const widgets = await this.prisma.widget.findMany({
+      where: {
+        tenantId: tenant.id,
+        isActive: true, // Fetch only active widgets
+      },
+      include: { tenant: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!widgets.length) {
+      throw new NotFoundException('No active widgets found for this tenant');
     }
 
     const reviews = await this.prisma.review.findMany({
       where: {
-        tenantId: widget.tenantId,
+        tenantId: tenant.id,
         status: 'APPROVED',
       },
       orderBy: { createdAt: 'desc' },
@@ -62,7 +84,8 @@ export class WidgetsService {
     const items = reviews.map((r) => ({
       id: r.id,
       authorName: r.authorName,
-      text: r.textStatus === 'APPROVED' ? r.text : null,
+      title: r.title,
+      text: r.text,
       videoUrl: r.video?.url,
       audioUrl: r.audio?.url,
       previewUrl: r.previewUrl,
@@ -70,22 +93,23 @@ export class WidgetsService {
     }));
 
     return {
-      widget: {
+      widgets: widgets.map(widget => ({
         id: widget.id,
         name: widget.name,
         layout: widget.layout,
         themeJson: widget.themeJson,
-      },
+      })),
       tenant: {
-        name: widget.tenant.name,
-        logoUrl: widget.tenant.logoUrl,
-        brandPrimaryHex: widget.tenant.brandPrimaryHex,
-        brandAccentHex: widget.tenant.brandAccentHex,
+        name: tenant.name,
+        slug: tenant.slug, // Include the slug in the response
+        logoUrl: tenant.logoUrl,
+        brandPrimaryHex: tenant.brandPrimaryHex,
+        brandAccentHex: tenant.brandAccentHex,
       },
       items,
     };
   }
-
+  
   // Toggle widget active/inactive
   async toggleWidget(widgetId: string, isActive: boolean) {
     return this.prisma.widget.update({

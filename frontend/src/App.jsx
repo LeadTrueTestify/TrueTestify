@@ -40,7 +40,7 @@ import SpotlightWidget from "./components/Shared/Widgets/SpotlightWidget";
 import WallWidget from "./components/Shared/Widgets/WallWidget";
 import GoogleEmbed from "./components/Shared/GoogleEmbed";
 import Document from "./components/Shared/Document";
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
 
 function App() {
@@ -94,19 +94,8 @@ function App() {
               path="/services/qr-collection"
               element={<QRCodeCollection />}
             />
-            <Route
-              path="/:businessName"
-              element={<PublicReviews />}
-            />
+            <Route path=":businessName" element={<PublicReviews />} />
 
-            <Route
-              path="/account"
-              element={
-                <UserProtectedRoute>
-                  <Account userInfo={user} business={tenant} />
-                </UserProtectedRoute>
-              }
-            />
             {/* Dashboard routes for admins */}
             <Route
               path="/dashboard"
@@ -116,11 +105,21 @@ function App() {
                 </AdminProtectedRoute>
               }
             >
-              <Route index element={<Moderation userInfo={user} business={tenant} />} />
+              <Route
+                index
+                element={<Moderation userInfo={user} business={tenant} />}
+              />
               <Route path="moderation" element={<Moderation />} />
               <Route path="analytics" element={<Analytics />} />
-              <Route path="widget-settings" element={<WidgetSettings business={tenant} />} />
+              <Route
+                path="widget-settings"
+                element={<WidgetSettings business={tenant} />}
+              />
               <Route path="billing" element={<Billing />} />
+              <Route
+                path="account"
+                element={<Account userInfo={user} business={tenant} />}
+              />
               <Route
                 path="manage-subscription"
                 element={<ManageSubscription />}
