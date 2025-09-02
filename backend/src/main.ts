@@ -7,6 +7,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
+  // Set a global prefix for all API routes.
+  // All endpoints will now be prefixed with /api/v1/
+  app.setGlobalPrefix('api/v1/');
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({

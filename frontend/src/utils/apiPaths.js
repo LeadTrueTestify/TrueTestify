@@ -4,7 +4,7 @@ export const BASE_URL = import.meta.env.VITE_BASE_URL;
 export const API_PATHS = {
   AUTH: {
     LOGIN: "/api/v1/auth/login",
-    REGISTER: "/api/v1/auth/register",
+    REGISTER: "/api/v1/auth/signup",
     GET_USER_INFO: (user_id) => `/api/v1/users/${user_id}`,
     REFRESH_TOKEN: "/api/v1/auth/refresh",
   },

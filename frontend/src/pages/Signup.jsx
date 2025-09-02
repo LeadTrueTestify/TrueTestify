@@ -10,13 +10,19 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("reviewer"); // State for selected role
-  const [tenantName, setTenantName] = useState(""); // State for business name
-  const [publicReviewUrl, setPublicReviewUrl] = useState(""); // State for the public URL slug
+  const [slug, setSlug] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [publicReviewUrl, setPublicReviewUrl] = useState("");
 
+  // --- States for required fields ---
+  const [website, setWebsite] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [brandColor, setBrandColor] = useState("#ffffff"); // Default color
+  const [logoFile, setLogoFile] = useState(null); // State for the logo file
+
+  // Use the mock signup function from the context
   const { signup } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -35,17 +41,15 @@ const Signup = () => {
 
   // Update the public review URL whenever the business name changes
   useEffect(() => {
-    if (role === "admin") {
-      const slug = slugify(tenantName);
-      setPublicReviewUrl(slug);
-    } else {
-      setPublicReviewUrl("");
-    }
-  }, [tenantName, role]);
+    // The slug is derived from the business name, not a separate input.
+    const newSlug = slugify(businessName);
+    setSlug(newSlug);
+    setPublicReviewUrl(newSlug);
+  }, [businessName]);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    
+
     // Check Email Condition
     if (!validateEmail(email)) {
       setError("Please enter a valid email.");
@@ -68,14 +72,14 @@ const Signup = () => {
       return;
     }
 
-    // Check Name Condition
-    if (!name) {
-      setError("Please enter name.");
+    if (!businessName) {
+      setError("Please enter business name.");
       return;
     }
 
-    if (role === "admin" && !tenantName) {
-      setError("Please enter business name.");
+    // Check contact email validation.
+    if (contactEmail && !validateEmail(contactEmail)) {
+      setError("Please enter a valid contact email.");
       return;
     }
 
@@ -83,15 +87,23 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const userData = {
-        name,
-        email,
-        password,
-        ...(role === "admin" && { tenantName }),
-      };
+      // Create a FormData object to handle both text fields and the file upload.
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("businessName", businessName);
+      formData.append("slug", slug);
+      formData.append("website", website);
+      formData.append("contactEmail", contactEmail);
+      formData.append("brandColor", brandColor);
 
-      const result = await signup(userData);
+      if (logoFile) {
+        formData.append("logoFile", logoFile);
+      }
+
+      const result = await signup(formData);
       if (result.success) {
+        toast.success("Registration successful!");
         navigate("/dashboard");
       }
     } catch (error) {
@@ -107,45 +119,7 @@ const Signup = () => {
       <h2 className="text-3xl font-bold text-blue-600 mb-6 text-center">
         Sign Up
       </h2>
-      <p className="text-gray-600 mb-8">
-        Choose your account type to get started.
-      </p>
       <form onSubmit={handleSignUp} className="space-y-6">
-        <div className="flex justify-center space-x-4">
-          <button
-            type="button"
-            onClick={() => setRole("admin")}
-            disabled={loading}
-            className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${
-              role === "admin"
-                ? "border-blue-600 bg-blue-50 text-blue-600"
-                : "border-gray-300 text-gray-600 hover:bg-gray-100"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            <UserIcon className="h-10 w-10 mb-2" />
-            <span className="font-bold">Admin</span>
-            <p className="text-sm text-center mt-1">
-              For business owners to manage reviews.
-            </p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setRole("reviewer")}
-            disabled={loading}
-            className={`flex-1 flex flex-col items-center p-6 border-2 transition-colors ${
-              role === "reviewer"
-                ? "border-blue-600 bg-blue-50 text-blue-600"
-                : "border-gray-300 text-gray-600 hover:bg-gray-100"
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            <UserPlusIcon className="h-10 w-10 mb-2" />
-            <span className="font-bold">Reviewer</span>
-            <p className="text-sm text-center mt-1">
-              For customers to submit a review.
-            </p>
-          </button>
-        </div>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -156,20 +130,6 @@ const Signup = () => {
               value={email}
               placeholder="Enter email"
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-              required
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              placeholder="Enter Name"
-              onChange={(e) => setName(e.target.value)}
               className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
               required
               disabled={loading}
@@ -204,59 +164,116 @@ const Signup = () => {
             />
           </div>
           {/* Conditional form fields for Admin role */}
-          {role === "admin" && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4 pt-4 border-t border-gray-200"
-            >
-              <div>
-                <label
-                  htmlFor="tenantName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Business Name
-                </label>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4 pt-4 border-t border-gray-200"
+          >
+            <div>
+              <label
+                htmlFor="businessName"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Business Name
+              </label>
+              <input
+                type="text"
+                id="businessName"
+                value={businessName}
+                placeholder="Enter your business name"
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="mt-1 block w-full py-2 rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                required
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="publicReviewUrl"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Public Review URL
+              </label>
+              <div className="mt-1 flex items-center">
+                <span className="bg-gray-200 text-gray-600 text-sm py-2 px-3 rounded-l-md border border-gray-400 border-r-0">
+                  /
+                </span>
                 <input
                   type="text"
-                  id="tenantName"
-                  value={tenantName}
-                  placeholder="Enter your business name"
-                  onChange={(e) => setTenantName(e.target.value)}
-                  className="mt-1 block w-full py-2 rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                  required={role === "admin"}
-                  disabled={loading}
+                  id="publicReviewUrl"
+                  value={publicReviewUrl}
+                  readOnly
+                  placeholder="URL"
+                  className="flex-grow px-3 py-2 border border-gray-400 rounded-r-md bg-gray-50 text-gray-600 cursor-not-allowed focus:outline-none"
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="publicReviewUrl"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Public Review URL
-                </label>
-                <div className="mt-1 flex items-center">
-                  <span className="bg-gray-200 text-gray-600 text-sm py-2 px-3 rounded-l-md border border-gray-400 border-r-0">
-                    /
-                  </span>
-                  <input
-                    type="text"
-                    id="publicReviewUrl"
-                    value={publicReviewUrl}
-                    readOnly
-                    placeholder="URL"
-                    className="flex-grow px-3 py-2 border border-gray-400 rounded-r-md bg-gray-50 text-gray-600 cursor-not-allowed focus:outline-none"
-                  />
-                </div>
-                {publicReviewUrl.length > 0 && (
-                  <p className="mt-2 text-xs text-gray-500">
-                    Your public review page will be at `/{publicReviewUrl}`.
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
+              {publicReviewUrl.length > 0 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  Your public review page will be at `/{publicReviewUrl}`.
+                </p>
+              )}
+            </div>
+
+            {/* New fields added below */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Website
+              </label>
+              <input
+                type="url"
+                value={website}
+                placeholder="https://example.com"
+                onChange={(e) => setWebsite(e.target.value)}
+                className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Contact Email
+              </label>
+              <input
+                type="email"
+                value={contactEmail}
+                placeholder="contact@example.com"
+                onChange={(e) => setContactEmail(e.target.value)}
+                className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Brand Color
+              </label>
+              <input
+                type="color"
+                value={brandColor}
+                onChange={(e) => setBrandColor(e.target.value)}
+                className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Logo
+              </label>
+              <input
+                type="file"
+                onChange={(e) => setLogoFile(e.target.files[0])}
+                className="mt-1 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-orange-50 file:text-orange-700
+                hover:file:bg-orange-100"
+                disabled={loading}
+              />
+            </div>
+          </motion.div>
         </div>
         <button
           type="submit"

@@ -12,7 +12,6 @@ const PublicReviews = () => {
   const { tenant } = useContext(AuthContext);
   
   // Filter only active widgets
-  const [view, setView] = useState([])
   const [widgets, setWidgets] = useState(null);
   const [selectedWidgeted, setSelectedWidget] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -71,7 +70,7 @@ const PublicReviews = () => {
     return (
       <div className="p-8 text-center bg-white border border-gray-200 rounded-lg max-w-4xl mx-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Select a Widget
+          No reviews yet.
         </h3>
         <div className="space-y-3">
           {selectedWidgeted?.map((widget) => (

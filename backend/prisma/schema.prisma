@@ -1,237 +1,67 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum IntegrationKind {
-  SHOPIFY
-  WORDPRESS
+generator client {
+  provider = "prisma-client-js"
 }
 
-enum BillingState {
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  UNPAID_HIDDEN
-  DELETED
-}
-
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
-
-enum ReviewStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  HIDDEN
-  DELETED
-}
-
-enum WidgetLayout {
-  GRID
-  CAROUSEL
-  SPOTLIGHT
-  FLOATING_BUBBLE
-}
-
+// User model for authentication
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  memberships  Membership[]
-  apiKeys      ApiKey[]
+  id         String        @id @default(uuid())
+  email      String        @unique
+  password   String        // Hashed with bcrypt
+  name       String?       // Optional user name (can be added later)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  BusinessUser BusinessUser[]
+
+  // Indexes and unique constraints per naming conventions
+  @@index([email], name: "ix_users_email")
+  @@unique([email], map: "uq_users_email")
 }
 
-model Tenant {
-  id               String           @id @default(cuid())
-  slug             String           @unique
-  name             String
-  logoUrl          String?
-  brandPrimaryHex  String?
-  brandAccentHex   String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  members          Membership[]
-  widgets          Widget[]
-  reviews          Review[]
-  videos           VideoAsset[]
-  audio            AudioAsset[]
-  billing          BillingAccount?
-  integrations     Integration[]
-  allowTextReviews Boolean          @default(false)
-  apiKeys          ApiKey[]
-  analyticsEvents  AnalyticsEvent[]
+// Business model (tenants)
+model Business {
+  id           String        @id @default(uuid())
+  slug         String        @unique
+  name         String
+  logoUrl      String?       // S3 URL for logo
+  brandColor   String?       // e.g., hex code
+  website      String?
+  contactEmail String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  BusinessUser BusinessUser[]
+
+  // Indexes and unique constraints per naming conventions
+  @@index([slug], name: "ix_businesses_slug")
+  @@unique([slug], map: "uq_businesses_slug")
+  // Composite index for safety as per multi-tenant rules
+  @@index([id], name: "ix_businesses_id") // Basic ID index if needed
 }
 
-model Membership {
-  id        String   @id @default(cuid())
-  tenantId  String
-  userId    String
-  role      Role
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+// Join table for user-business associations (allows multiple users per business, roles for owners/staff)
+model BusinessUser {
+  id         String        @id @default(uuid())
+  businessId String
+  userId     String
+  role       String        @default("owner") // e.g., 'owner', 'staff'
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
-  @@unique([tenantId, userId])
+  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes and unique constraints per naming conventions
+  @@unique([businessId, userId], name: "uq_business_users_business_id_user_id")
+  @@index([businessId], name: "ix_business_users_business_id")
+  @@index([userId], name: "ix_business_users_user_id")
+  @@index([businessId, role], name: "ix_business_users_business_id_role")
 }
 
-model Widget {
-  id         String       @id @default(cuid())
-  tenantId   String
-  name       String
-  viewsCount Int          @default(0)
-  layout     WidgetLayout
-  themeJson  Json?
-  isActive   Boolean      @default(true)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  tenant     Tenant       @relation(fields: [tenantId], references: [id])
-  reviews    Review[]
-}
-
-model VideoAsset {
-  id        String   @id @default(cuid())
-  tenantId  String
-  s3Key     String   @unique
-  url       String
-  sizeBytes BigInt
-  width     Int?
-  height    Int?
-  format    String?
-  createdAt DateTime @default(now())
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  reviews   Review[]
-}
-
-model AudioAsset {
-  id        String   @id @default(cuid())
-  tenantId  String
-  s3Key     String   @unique
-  url       String
-  sizeBytes BigInt
-  width     Int?
-  height    Int?
-  format    String?
-  createdAt DateTime @default(now())
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  reviews   Review[]
-}
-
-model Review {
-  id          String       @id @default(cuid())
-  tenantId    String
-  widgetId    String?
-  title       String?
-  authorName  String?
-  authorEmail String?
-  viewsCount  Int          @default(0)
-  consent     Boolean      @default(false)
-  status      ReviewStatus @default(PENDING)
-  videoId     String?
-  audioId     String?
-  text        String?
-  textStatus  String       @default("PENDING")
-  previewUrl  String?
-  durationSec Int?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  tenant      Tenant       @relation(fields: [tenantId], references: [id])
-  widget      Widget?      @relation(fields: [widgetId], references: [id])
-  video       VideoAsset?  @relation(fields: [videoId], references: [id])
-  audio       AudioAsset?  @relation(fields: [audioId], references: [id])
-}
-
-model BillingAccount {
-  id                String         @id @default(cuid())
-  tenantId          String         @unique
-  stripeCustomerId  String         @unique
-  state             BillingState   @default(ACTIVE)
-  unpaidSince       DateTime?
-  lastInvoiceAt     DateTime?
-  deleteAfter       DateTime?
-  storageLimitGB    Int            @default(10)
-  activeWidgetLimit Int            @default(3)
-  tenant            Tenant         @relation(fields: [tenantId], references: [id])
-  subscriptions     Subscription[]
-  invoices          Invoice[]
-  usage             UsageRecord[]
-}
-
-model Subscription {
-  id               String         @id @default(cuid())
-  billingAccountId String
-  stripeSubId      String         @unique
-  priceId          String
-  status           String
-  currentPeriodEnd DateTime
-  createdAt        DateTime       @default(now())
-  billingAccount   BillingAccount @relation(fields: [billingAccountId], references: [id])
-}
-
-model Invoice {
-  id               String         @id @default(cuid())
-  billingAccountId String
-  stripeInvoiceId  String         @unique
-  amountDueCents   Int
-  amountPaidCents  Int            @default(0)
-  status           String
-  createdAt        DateTime       @default(now())
-  billingAccount   BillingAccount @relation(fields: [billingAccountId], references: [id])
-}
-
-model UsageRecord {
-  id               String         @id @default(cuid())
-  billingAccountId String
-  periodStart      DateTime
-  periodEnd        DateTime
-  storageBytes     BigInt
-  widgetViews      Int            @default(0)
-  reviewsCount     Int            @default(0)
-  createdAt        DateTime       @default(now())
-  billingAccount   BillingAccount @relation(fields: [billingAccountId], references: [id])
-}
-
-model ApiKey {
-  id        String   @id @default(cuid())
-  tenantId  String
-  userId    String
-  keyHash   String
-  label     String?
-  createdAt DateTime @default(now())
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@index([tenantId])
-}
-
-model Integration {
-  id          String          @id @default(cuid())
-  tenantId    String
-  kind        IntegrationKind
-  shopDomain  String?
-  accessToken String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  tenant      Tenant          @relation(fields: [tenantId], references: [id])
-}
-
-model AnalyticsEvent {
-  id        String   @id @default(cuid())
-  tenantId  String
-  type      String
-  meta      Json?
-  createdAt DateTime @default(now())
-  tenant    Tenant   @relation(fields: [tenantId], references: [id])
-}
+// Note: Prisma does not support custom naming for foreign key constraints directly (e.g., fk_business_users_businesses).
+// This is a Prisma limitation. The generated FK names will be like "BusinessUser_businessId_fkey".
+// If exact FK naming is required, use raw SQL in migrations or post-migration scripts.
+// For this MVP, we proceed with Prisma's defaults as they are functional and follow best practices.

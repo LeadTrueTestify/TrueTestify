@@ -1,48 +1,50 @@
-import { Injectable } from '@nestjs/common'
-import { S3 } from 'aws-sdk'
-import { v4 as uuid } from 'uuid'
+
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class StorageService {
-   private readonly s3: S3;
-  private readonly bucket: string;
-  private readonly region: string;
- constructor() {
-    this.region = process.env.AWS_REGION || 'us-east-1';
-    this.bucket = process.env.AWS_S3_BUCKET || 'your-bucket-name';
+  private s3: S3Client;
 
-    this.s3 = new S3({
-      region: this.region,
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    });
-  }
-  createUploadUrl(tenantSlug: string, opts: { contentType: string }) {
-    const key = `${tenantSlug}/videos/${uuid()}.webm` // client compresses to 720p webm/mp4
-    const url = this.s3.getSignedUrl('putObject', {
-      Bucket: process.env.AWS_S3_BUCKET!,
-      Key: key,
-      Expires: 60 * 5,
-      ContentType: opts.contentType,
-      ACL: 'public-read',
-    })
-    return { key, url }
+  constructor() {
+    const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+    const s3Config: any = {
+      region: process.env.AWS_REGION || 'us-east-1',
+    };
+
+    if (accessKeyId && secretAccessKey) {
+      s3Config.credentials = {
+        accessKeyId,
+        secretAccessKey,
+      };
+    }
+
+    this.s3 = new S3Client(s3Config);
   }
 
-  getPublicUrl(key: string) {
-    return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+  async uploadFile(file: Express.Multer.File, key: string): Promise<string> {
+    try {
+      const bucket = process.env.AWS_S3_BUCKET;
+      if (!bucket) {
+        throw new Error('AWS_S3_BUCKET environment variable is not set');
+      }
+
+      const command = new PutObjectCommand({
+        Bucket: bucket,
+        Key: key, // e.g., logos/{slug}/{filename}
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        // ACL is deprecated; use bucket policy for public access
+      });
+
+      await this.s3.send(command);
+      const location = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+      return location;
+    } catch (error) {
+      console.error('S3 upload error:', error);
+      throw new InternalServerErrorException(`Failed to upload to S3: ${error.message}`);
+    }
   }
-  async uploadFile(key: string, fileBuffer: Buffer, contentType: string) {
-  await this.s3
-    .putObject({
-      Bucket: this.bucket,
-      Key: key,
-      Body: fileBuffer,
-      ContentType: contentType,
-    })
-    .promise();
-
-  return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
-}
-
 }
