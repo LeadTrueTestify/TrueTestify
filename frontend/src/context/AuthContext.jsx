@@ -85,9 +85,9 @@ const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Token validation failed:", error);
           // Clear invalid token and user data
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          setUser(null);
+          // localStorage.removeItem("token");
+          // localStorage.removeItem("user");
+          // setUser(null);
         }
       }
       setLoading(false);
@@ -119,21 +119,22 @@ const AuthProvider = ({ children }) => {
         email,
         password,
       });
-
-      const { token, user: userData, tenant: tenantData } = response.data;
+      console.log(response.data.payload.businessId);
+        
+      const { token,  payload: payloadData } = response.data;
 
       if (token) {
         localStorage.setItem("token", token);
-        updateUser(userData);
+        updateUser(payloadData);
 
         // Set tenant if available
-        if (tenantData) {
-          setTenant(tenantData);
-          await fetchWidgets(tenantData.id);
+        if (payloadData) {
+          setTenant(payloadData);
+          await fetchWidgets(payloadData.businessId);
         }
 
         toast.success("Login successful!");
-        return { success: true, user: userData, tenant: tenantData };
+        return { success: true, payload: payloadData };
       }
     } catch (error) {
       const errorMessage =
@@ -164,19 +165,20 @@ const AuthProvider = ({ children }) => {
         userData
       );
 
-      const { token, user: newUser, tenant: tenantData } = response.data;
+    
+      const { token,  payload:payloadData,  } = response.data;
 
       if (token) {
         localStorage.setItem("token", token);
-        updateUser(newUser);
+        updateUser(payloadData);
 
-        if (tenantData) {
-          setTenant(tenantData);
-          await fetchWidgets(tenantData.id);
+        if (payloadData) {
+          setTenant(payloadData);
+          await fetchWidgets(payloadData.id);
         }
 
         toast.success("Account created successfully!");
-        return { success: true, user: newUser, tenant: tenantData };
+        return { success: true, payload:payloadData };
       }
     } catch (error) {
       const errorMessage =
