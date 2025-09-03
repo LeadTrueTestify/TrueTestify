@@ -1,4 +1,3 @@
-// src/auth/auth.controller.ts
 import { Controller, Post, Body, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -9,17 +8,17 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('signup')
+  @Post('register')
   @UseInterceptors(FileInterceptor('logo'))
   async signup(
     @Body() signupDto: SignupDto,
-    @UploadedFile() logo: Express.Multer.File,
-  ): Promise<{ token: string }> {
+    @UploadedFile() logo?: Express.Multer.File,
+  ): Promise<{ token: string; payload: any }> {
     return this.authService.signup(signupDto, logo);
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<{ token: string }> {
+  async login(@Body() loginDto: LoginDto): Promise<{ token: string; payload: any }> {
     return this.authService.login(loginDto);
   }
 }

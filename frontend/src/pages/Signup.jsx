@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -24,6 +24,7 @@ const Signup = () => {
 
   // Use the mock signup function from the context
   const { signup } = useContext(AuthContext);
+  const colorInputRef = useRef(null);
   const navigate = useNavigate();
 
   // Function to sanitize the business name for a URL
@@ -248,13 +249,33 @@ const Signup = () => {
               <label className="block text-sm font-medium text-gray-700">
                 Brand Color
               </label>
-              <input
-                type="color"
-                value={brandColor}
-                onChange={(e) => setBrandColor(e.target.value)}
-                className="mt-1 py-2 block w-full rounded-md border-gray-400 shadow-sm focus:border-orange-500 focus:ring-orange-500"
-                disabled={loading}
-              />
+              <div className="relative">
+                <input
+                  type="color"
+                  value={brandColor}
+                  onChange={(e) => setBrandColor(e.target.value)}
+                  className="absolute opacity-0 w-0 h-0"
+                  ref={colorInputRef}
+                  disabled={loading}
+                />
+                <div
+                  className="flex items-center space-x-2 p-2 rounded-md border border-gray-400 shadow-sm cursor-pointer"
+                  onClick={() => colorInputRef.current.click()}
+                >
+                  <div
+                    className="w-8 h-8 rounded-full border border-gray-300"
+                    style={{ backgroundColor: brandColor }}
+                  ></div>
+                  <input
+                    type="text"
+                    value={brandColor}
+                    onChange={(e) => setBrandColor(e.target.value)}
+                    placeholder="Enter hex code (e.g., #ffffff)"
+                    className="flex-1 py-1 px-2 text-sm rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
