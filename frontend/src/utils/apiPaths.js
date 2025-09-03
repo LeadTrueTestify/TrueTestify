@@ -3,13 +3,13 @@ export const BASE_URL = import.meta.env.VITE_BASE_URL;
 // API Paths for TrueTestify MVP
 export const API_PATHS = {
   AUTH: {
-    LOGIN: "/api/v1/auth/login",
-    REGISTER: "/api/v1/auth/signup",
+    LOGIN: "/api/auth/login",
+    REGISTER: "/api/auth/signup",
     GET_USER_INFO: (user_id) => `/api/v1/users/${user_id}`,
     REFRESH_TOKEN: "/api/v1/auth/refresh",
   },
-  TENANTS: {
-    GET_TENANTS: (id) => `/api/v1/tenants/${id}`,
+  BUSINESSES: {
+    GET_PUBLIC_PROFILE: (id) => `/api/v1/tenants/${id}`,
     UPDATE_TENANTS: (id) => `/api/v1/tenants/${id}`,
     CREATE_TENANTS: "/api/v1/tenants",
     GET_TENANT_BY_SLUG: (slug) => `/api/v1/tenants/slug/${slug}`,

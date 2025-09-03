@@ -12,7 +12,7 @@ import { StorageService } from '../storage/storage.service';
 
 /**
  * Service for authentication: signup, login, JWT handling.
- * Handles business creation during signup.
+ * Handles business creation during signup with multi-tenant scoping.
  */
 @Injectable()
 export class AuthService {
@@ -37,9 +37,10 @@ export class AuthService {
       website,
       contactEmail,
       brandColor,
+      name,
     } = signupDto;
 
-    // Check if email or slug exists
+    // Check if email or slug exists (case-insensitive due to citext)
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -53,24 +54,32 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Upload logo to S3 if provided
+    // Upload logo to S3 if provided, tenant-scoped
     let logoUrl: string | null = null;
     if (logoFile) {
-      const sanitizedFileName = logoFile.originalname.replace(/\s+/g, '_'); // Replace spaces with underscores
+      const sanitizedFileName = logoFile.originalname.replace(/\s+/g, '_');
       logoUrl = await this.storageService.uploadFile(
         logoFile,
-        `logos/${slug}/${sanitizedFileName}`,
+        `truetestify/${slug}/logos/${sanitizedFileName}`,
       );
     }
 
     // Create user, business, and association (transaction for atomicity)
     const result = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
-        data: { email, password: hashedPassword, name: businessName },
+        data: {
+          email,
+          passwordHash: hashedPassword,
+          name: name || businessName, // Fallback to businessName if name not provided
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
         select: {
           id: true,
           email: true,
           name: true,
+          status: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -84,6 +93,9 @@ export class AuthService {
           brandColor,
           website,
           contactEmail,
+          settingsJson: {},
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         select: {
           id: true,
@@ -93,13 +105,21 @@ export class AuthService {
           brandColor: true,
           website: true,
           contactEmail: true,
+          settingsJson: true,
           createdAt: true,
           updatedAt: true,
         },
       });
 
       await tx.businessUser.create({
-        data: { userId: user.id, businessId: business.id, role: 'owner' },
+        data: {
+          userId: user.id,
+          businessId: business.id,
+          role: 'owner',
+          isDefault: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       });
 
       return { user, business };
@@ -115,50 +135,122 @@ export class AuthService {
 
     return {
       token,
-      payload,
+      payload: {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          status: result.user.status,
+          createdAt: result.user.createdAt,
+          updatedAt: result.user.updatedAt,
+        },
+        business: result.business,
+      },
     };
   }
-  async login(loginDto: LoginDto): Promise<{ token: string; payload: any }> {
-    const { email, password } = loginDto;
 
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        passwordHash: true,
+        name: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user || user.status !== 'active') {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Fetch business_id (assume single business per user for MVP; extend if needed)
-    const businessUser = await this.prisma.businessUser.findFirst({
-      where: { userId: user.id },
-    });
-    if (!businessUser)
-      throw new UnauthorizedException('No business associated');
+    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
+    // Fetch businessId from business_users (get the default business or first available)
+    const businessUser = await this.prisma.businessUser.findFirst({
+      where: { userId: user.id, deletedAt: null, isDefault: true },
+      select: { businessId: true },
+    });
+
+    if (!businessUser) {
+      throw new UnauthorizedException('No business access for this user');
+    }
+
+    // Update lastLoginAt
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    // Generate JWT with businessId
     const payload = {
       sub: user.id,
       email: user.email,
       businessId: businessUser.businessId,
     };
+
     const token = this.jwtService.sign(payload);
 
-    return { token, payload };
+    return {
+      token,
+      payload: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          status: user.status,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+        business: {
+          id: businessUser.businessId,
+        },
+      },
+    };
   }
 
   async validateUser(userId: string): Promise<{
     id: string;
     email: string;
     name: string | null;
+    status: string;
     createdAt: Date;
     updatedAt: Date;
+    businessUsers: { businessId: string; role: string; isDefault: boolean }[];
   } | null> {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         email: true,
         name: true,
+        status: true,
         createdAt: true,
         updatedAt: true,
+        deletedAt: true,
+        businessUsers: {
+          select: {
+            businessId: true,
+            role: true,
+            isDefault: true,
+          },
+        },
       },
     });
+
+    if (!user || user.deletedAt || user.status !== 'active') {
+      return null;
+    }
+
+    return user;
   }
 }
+
+
+  
