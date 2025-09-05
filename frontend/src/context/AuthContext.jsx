@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import axiosInstance from "../utils/axiosInstanse";
-import { API_PATHS } from "../utils/apiPaths";
+import axiosInstance from "../service/axiosInstanse";
+import { API_PATHS } from "../service/apiPaths";
 
 export const AuthContext = createContext();
 
@@ -58,36 +58,19 @@ const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
       const savedUser = getInitialData("user", null);
-
       if (token && savedUser) {
         try {
           // Verify token is still valid by fetching user info
           const response = await axiosInstance.get(
-            API_PATHS.AUTH.GET_USER_INFO(savedUser.id)
+            API_PATHS.BUSINESSES.GET_PRIVATE_PROFILE
           );
           setUser(response.data);
-
-          // Get tenant information if user has memberships
-          if (
-            response.data.memberships &&
-            response.data.memberships.length > 0
-          ) {
-            const tenantId = response.data.memberships[0].tenantId; 
-            console.log(tenantId);
-            // Assuming tenantId is now part of memberships
-            if (tenantId) {
-              const tenantData = await fetchTenantInfo(tenantId);
-              setTenant(tenantData);
-              // After tenant info is fetched, fetch widgets
-              fetchWidgets(tenantData?.id);
-            }
-          }
         } catch (error) {
           console.error("Token validation failed:", error);
           // Clear invalid token and user data
-          // localStorage.removeItem("token");
-          // localStorage.removeItem("user");
-          // setUser(null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          setUser(null);
         }
       }
       setLoading(false);
@@ -119,9 +102,9 @@ const AuthProvider = ({ children }) => {
         email,
         password,
       });
-      console.log(response.data.payload.businessId);
-        
-      const { token,  payload: payloadData } = response.data;
+      console.log(response);
+
+      const { token, payload: payloadData } = response.data;
 
       if (token) {
         localStorage.setItem("token", token);
@@ -162,11 +145,15 @@ const AuthProvider = ({ children }) => {
     try {
       const response = await axiosInstance.post(
         API_PATHS.AUTH.REGISTER,
-        userData
+        userData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Explicitly set Content-Type
+          },
+        }
       );
 
-    
-      const { token,  payload:payloadData,  } = response.data;
+      const { token, payload: payloadData } = response.data;
 
       if (token) {
         localStorage.setItem("token", token);
@@ -178,7 +165,7 @@ const AuthProvider = ({ children }) => {
         }
 
         toast.success("Account created successfully!");
-        return { success: true, payload:payloadData };
+        return { success: true, payload: payloadData };
       }
     } catch (error) {
       const errorMessage =

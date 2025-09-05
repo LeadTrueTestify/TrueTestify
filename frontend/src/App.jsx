@@ -1,47 +1,57 @@
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { Route, Routes } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import Home from "./components/Shared/Home/Home";
+import Home from "./pages/Home/Home";
 import RecordReview from "./pages/RecordReview";
 import PublicReviews from "./pages/PublicReviews";
-import DashboardLayout from "./components/UI/DashboardLayout";
-import AdminSettings from "./components/Dashboard/AdminSettings";
-import Moderation from "./components/Dashboard/Moderation";
-import Analytics from "./components/Dashboard/Analytics";
-import ManageSubscription from "./pages/ManageSubscrption";
-import Pricing from "./components/Shared/Pricing";
-import Billing from "./components/Dashboard/Billing";
-import UserProtectedRoute from "./components/UI/UserProtectedRoute";
-import AdminProtectedRoute from "./components/UI/AdminProtectedRoute";
+import DashboardLayout from "./layouts/DashboardLayout";
+import AdminSettings from "./pages/Dashboard/AdminSettings";
+import Moderation from "./pages/Dashboard/Moderation";
+import Analytics from "./pages/Dashboard/Analytics";
+import ManageSubscription from "./pages/Dashboard/ManageSubscrption";
+import Pricing from "./pages/Pricing";
+import Billing from "./pages/Billing";
+import AdminProtectedRoute from "./service/AdminProtectedRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Features from "./components/Shared/Features";
-import WidgetSettings from "./components/Dashboard/WidgetSettings";
-import Footer from "./components/Shared/Footer";
-import FloatingReviewWidget from "./components/Dashboard/FloatingReviewWidget";
-import Contact from "./components/Shared/Contact";
-import NotFound from "./components/Shared/NotFound";
-import Account from "./components/Shared/Account";
-import Navbar from "./components/Shared/Navbar";
-import Integrations from "./components/Shared/Integrations";
-import Support from "./components/Shared/Support";
-import TermsOfService from "./components/Shared/TermsOfService";
-import PrivacyPolicy from "./components/Shared/PrivacyPolicy";
-import Blog from "./components/Shared/Blog";
+import Features from "./components/Features";
+import WidgetSettings from "./pages/Dashboard/WidgetSettings";
+import Footer from "./components/Footer";
+import FloatingReviewWidget from "./components/FloatingReviewWidget";
+import Contact from "./pages/Contact";
+import NotFound from "./pages/NotFound";
+import Account from "./pages/Account";
+import Navbar from "./components/Navbar";
+import Integrations from "./pages/Integrations";
+import Support from "./pages/Support";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Blog from "./pages/Blog";
 import Testimonial from "./pages/Testimonial";
-import About from "./components/Shared/About";
-import VideoReviews from "./components/Shared/Services/VideoReviews";
-import AudioReviews from "./components/Shared/Services/AudioReviews";
-import TextReviews from "./components/Shared/Services/TextReviews";
-import QRCodeCollection from "./components/Shared/Services/QRCodeCollection";
-import CarouselWidget from "./components/Shared/Widgets/CarouselWidget";
-import GridWidget from "./components/Shared/Widgets/GridWidget";
-import SpotlightWidget from "./components/Shared/Widgets/SpotlightWidget";
-import WallWidget from "./components/Shared/Widgets/WallWidget";
-import GoogleEmbed from "./components/Shared/GoogleEmbed";
-import Document from "./components/Shared/Document";
+import About from "./pages/About";
+import VideoReviews from "./pages/Services/VideoReviews";
+import AudioReviews from "./pages/Services/AudioReviews";
+import TextReviews from "./pages/Services/TextReviews";
+import QRCodeCollection from "./pages/Services/QRCodeCollection";
+import CarouselWidget from "./pages/Widgets/CarouselWidget";
+import GridWidget from "./pages/Widgets/GridWidget";
+import SpotlightWidget from "./pages/Widgets/SpotlightWidget";
+import WallWidget from "./pages/Widgets/WallWidget";
+import GoogleEmbed from "./pages/GoogleEmbed";
+import Document from "./pages/Document";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
+import BusinessDashboard from "./pages/Dashboard/BusinessDashboard";
+import { Toaster } from "react-hot-toast";
+
+
+// const Root = ()=>{
+//   // Check Token
+//   const isAuthenticated = !!localStorage.getItem("token")
+
+//   // Redirect The Location
+//   return isAuthenticated ?( <Navigate to='/dashboard'/> ): (<Navigate to='/login' />)
+
+// }
 
 function App() {
   const { user, tenant } = useContext(AuthContext);
@@ -111,6 +121,7 @@ function App() {
               />
               <Route path="moderation" element={<Moderation />} />
               <Route path="analytics" element={<Analytics />} />
+              <Route path="business/me" element={<BusinessDashboard />} />
               <Route
                 path="widget-settings"
                 element={<WidgetSettings business={tenant} />}
