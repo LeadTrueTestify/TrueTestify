@@ -1,135 +1,124 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [citext]
 }
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
-// User model for authentication
-model User {
-  id           String        @id @default(uuid())
-  email        String        @unique @db.Citext
-  passwordHash String
-  name         String?
-  status       String        @default("active")
-  lastLoginAt  DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  deletedAt    DateTime?
-  businessUsers BusinessUser[]
-
-  @@index([email], name: "ix_users_email")
-  @@unique([email], map: "uq_users_email")
-}
-
-// Business model (tenants)
 model Business {
-  id            String        @id @default(uuid())
-  slug          String        @unique @db.Citext
+  id            String       @id @default(uuid())
+  slug          String       @unique @db.Citext
   name          String
   logoUrl       String?
   brandColor    String?
   website       String?
-  contactEmail  String?
+  contactEmail  String?      @db.Citext
   settingsJson  Json?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+  reviews       Review[]
+  mediaAssets   MediaAsset[]
+  businessUsers BusinessUser[]
+  transcodeJobs TranscodeJob[]
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique @db.Citext
+  passwordHash  String
+  name          String?
+  status        String       @default("active")
+  lastLoginAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?
   businessUsers BusinessUser[]
-  reviews       Review[]
-  mediaAssets   MediaAsset[]    // Added for MediaAsset relation
-  transcodeJobs TranscodeJob[]  // Added for TranscodeJob relation
-
-  @@index([slug], name: "ix_businesses_slug")
-  @@unique([slug], map: "uq_businesses_slug")
-  @@index([id, slug], name: "ix_businesses_id_slug")
 }
 
-// Join table for user-business associations
 model BusinessUser {
-  id         String        @id @default(uuid())
+  id         String    @id @default(uuid())
   businessId String
   userId     String
-  role       String        @default("owner")
-  isDefault  Boolean       @default(false)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  role       String    @default("owner")
+  isDefault  Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
-  business   Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([businessId, userId], name: "uq_business_users_business_id_user_id")
-  @@index([businessId], name: "ix_business_users_business_id")
-  @@index([userId], name: "ix_business_users_user_id")
-  @@index([businessId, userId], name: "ix_business_users_business_id_user_id")
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@index([businessId, userId])
 }
 
-// Review model for video/audio/text reviews
 model Review {
-  id                 String        @id @default(uuid())
-  businessId         String
-  type               String        // e.g., 'video', 'audio', 'text'
-  status             String        @default("pending") // e.g., 'pending', 'approved', 'rejected'
-  title              String?
-  bodyText           String?
-  rating             Int?          // e.g., 1-5
-  reviewerName       String?
-  reviewerContactJson Json?        // e.g., {"email": "...", "phone": "..."}
-  consentChecked     Boolean       @default(false)
-  source             String?       // e.g., 'website', 'google'
-  submittedAt        DateTime?
-  publishedAt        DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  deletedAt          DateTime?
-  business           Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  mediaAssets        MediaAsset[]
-  transcodeJobs      TranscodeJob[]
+  id                  String      @id @default(uuid())
+  businessId          String
+  type                String
+  status              String      @default("pending") // pending, approved, rejected
+  title               String?
+  bodyText            String?
+  rating              Int?
+  reviewerName        String?
+  reviewerContactJson Json?
+  consentChecked      Boolean     @default(false)
+  source              String?     @default("website")
+  submittedAt         DateTime?
+  publishedAt         DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  deletedAt           DateTime?
+  business            Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  mediaAssets         MediaAsset[]
+  transcodeJobs       TranscodeJob[]
 
   @@index([businessId, status], name: "ix_reviews_business_id_status")
   @@index([businessId, submittedAt], name: "ix_reviews_business_id_submitted_at")
-  @@index([businessId, id], name: "ix_reviews_business_id_id")
+  @@index([businessId])
 }
 
-// Media assets for reviews (video/audio files)
 model MediaAsset {
   id           String        @id @default(uuid())
   businessId   String
   reviewId     String
-  assetType    String        // e.g., 'video', 'audio', 'thumbnail'
-  s3Key        String        // S3 path, e.g., truetestify/{business_id}/reviews/{review_id}/video.mp4
-  durationSec  Int?          // Duration in seconds
-  sizeBytes    Int           // Size in bytes
-  metadataJson Json?         // e.g., {"resolution": "1280x720", "bitrate": "1.5Mbps"}
+  assetType    String
+  s3Key        String
+  durationSec  Int?
+  sizeBytes    Int
+  metadataJson Json?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   deletedAt    DateTime?
   business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
   review       Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  transcodeJobs TranscodeJob[]
+  transcodeJobs TranscodeJob[] @relation("MediaAssetToTranscodeJob")
 
   @@index([businessId, reviewId], name: "ix_media_assets_business_id_review_id")
-  @@index([businessId, id], name: "ix_media_assets_business_id_id")
+  @@index([businessId])
 }
 
-// Transcode jobs for processing media
 model TranscodeJob {
-  id            String        @id @default(uuid())
+  id            String      @id @default(uuid())
   businessId    String
   reviewId      String
   inputAssetId  String
-  target        String        // e.g., '720p', 'audio_mp3'
-  status        String        @default("pending") // e.g., 'pending', 'processing', 'completed', 'failed'
-  error         String?       // Error message if failed
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  target        String      // e.g., '720p', 'audio_mp3'
+  status        String      @default("pending") // pending, processing, completed, failed
+  error         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
   deletedAt     DateTime?
-  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  review        Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  inputAsset    MediaAsset    @relation(fields: [inputAssetId], references: [id], onDelete: Cascade)
+  business      Business    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  review        Review      @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  inputAsset    MediaAsset  @relation("MediaAssetToTranscodeJob", fields: [inputAssetId], references: [id], onDelete: Cascade)
 
   @@index([businessId, reviewId], name: "ix_transcode_jobs_business_id_review_id")
-  @@index([businessId, id], name: "ix_transcode_jobs_business_id_id")
+  @@index([businessId])
 }

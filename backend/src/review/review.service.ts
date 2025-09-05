@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { CreateReviewDto } from './dto/review.dto';
+import { v4 as uuidv4 } from 'uuid';
 import type { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ReviewService {
@@ -15,149 +15,131 @@ export class ReviewService {
   ) {}
 
   async createReview(slug: string, dto: CreateReviewDto, file?: Express.Multer.File) {
+    // Define allowed mimetypes
+    const allowedVideoMimetypes = ['video/webm', 'video/mp4', 'video/quicktime',"video/webm;codecs=vp8,opus"];
+    const allowedAudioMimetypes = ['audio/webm', 'audio/mpeg', 'audio/wav'];
+
     // Validate consent
     if (!dto.consentChecked) {
-      throw new BadRequestException('Consent is required');
+      throw new BadRequestException('Consent is mandatory');
     }
 
-    // Resolve business_id from slug
+    // Validate type
+    if (!['video', 'audio', 'text'].includes(dto.type)) {
+      throw new BadRequestException('Type must be video, audio, or text');
+    }
+
+    // Validate text reviews
+    if (dto.type === 'text' && !dto.bodyText) {
+      throw new BadRequestException('Body text is required for text reviews');
+    }
+
+    // Validate file presence for video/audio
+    if (dto.type !== 'text' && !file) {
+      throw new BadRequestException('File is required for video or audio reviews');
+    }
+
+    // Normalize mimetype (remove codec information)
+    const normalizeMimetype = (mimetype: string) => mimetype.split(';')[0];
+
+    // Validate file mimetype
+    if (dto.type === 'video' && file) {
+      console.log('Video file mimetype:', file.mimetype); // Debug log
+      const normalizedMimetype = normalizeMimetype(file.mimetype);
+      const isValidVideo = allowedVideoMimetypes.includes(normalizedMimetype);
+      if (!isValidVideo) {
+        throw new BadRequestException(`File must be one of: ${allowedVideoMimetypes.join(', ')}`);
+      }
+    }
+    if (dto.type === 'audio' && file) {
+      console.log('Audio file mimetype:', file.mimetype); // Debug log
+      const normalizedMimetype = normalizeMimetype(file.mimetype);
+      const isValidAudio = allowedAudioMimetypes.includes(normalizedMimetype);
+      if (!isValidAudio) {
+        throw new BadRequestException(`File must be one of: ${allowedAudioMimetypes.join(', ')}`);
+      }
+    }
+
+    // Validate business
     const business = await this.prisma.business.findUnique({
       where: { slug, deletedAt: null },
-      select: { id: true, name: true },
     });
-    if (!business) throw new NotFoundException('Business not found');
-
-    // Validate file and media limits
-    if (!file) throw new BadRequestException('Media file is required');
-    if (!['video', 'audio'].includes(dto.type)) {
-      throw new BadRequestException('Type must be video or audio');
+    if (!business) {
+      throw new NotFoundException('Business not found');
     }
 
-    // Validate duration and size (simplified; actual validation requires metadata extraction)
-    const maxDurationSec = 60;
-    const maxSizeBytes = 30 * 1024 * 1024; // 30MB for 60s at ~2Mbps
-    if (file.size > maxSizeBytes) {
-      throw new BadRequestException('File size exceeds 30MB limit');
-    }
-
-    // Create review (pending status)
+    // Create review
     const review = await this.prisma.review.create({
       data: {
         businessId: business.id,
         type: dto.type,
-        status: 'pending',
         title: dto.title,
-        bodyText: dto.bodyText,
+        bodyText: dto.type === 'text' ? dto.bodyText : null,
         rating: dto.rating,
         reviewerName: dto.reviewerName,
+        reviewerContactJson: dto.reviewerContactJson || {},
         consentChecked: dto.consentChecked,
-        source: 'website',
+        source: dto.source || 'website',
         submittedAt: new Date(),
-      },
-      select: {
-        id: true,
-        businessId: true,
-        type: true,
-        status: true,
-        submittedAt: true,
+        status: 'pending',
       },
     });
 
-    // Upload file to S3 (tenant-scoped)
-    const s3Key = `truetestify/${business.id}/reviews/${review.id}/${dto.type}-${randomUUID()}.${file.mimetype.split('/')[1]}`;
-    const s3Url = await this.storageService.uploadFile(file, s3Key);
+    // Handle file upload for video/audio
+    if (dto.type !== 'text' && file) {
+      const normalizedMimetype = normalizeMimetype(file.mimetype);
+      const fileExtension = normalizedMimetype.includes('webm') ? 'webm' :
+                           normalizedMimetype.includes('mp4') ? 'mp4' :
+                           normalizedMimetype.includes('quicktime') ? 'mov' :
+                           normalizedMimetype.includes('mpeg') ? 'mp3' : 'wav';
+      const s3Key = `reviews/${dto.type}/${dto.type}-${uuidv4()}.${fileExtension}`;
+      const fileUrl = await this.storageService.uploadFile(file, s3Key, business.slug);
 
-    // Create media asset
-    const mediaAsset = await this.prisma.mediaAsset.create({
-      data: {
+      const mediaAsset = await this.prisma.mediaAsset.create({
+        data: {
+          businessId: business.id,
+          reviewId: review.id,
+          assetType: file.mimetype, // Retain full mimetype for accuracy
+          s3Key,
+          durationSec: 30, // Placeholder; calculate in production
+          sizeBytes: file.size,
+          metadataJson: {},
+        },
+      });
+
+      // Add to transcode queue
+      await this.transcodeQueue.add({
         businessId: business.id,
         reviewId: review.id,
-        assetType: dto.type,
-        s3Key,
-        sizeBytes: file.size,
-        metadataJson: {}, // Placeholder; update with actual metadata post-transcoding
-        durationSec: 0, // Placeholder; update post-transcoding
-      },
-      select: { id: true, s3Key: true },
-    });
-
-    // Enqueue transcode job
-    await this.transcodeQueue.add({
-      businessId: business.id,
-      reviewId: review.id,
-      inputAssetId: mediaAsset.id,
-      s3Key,
-      target: dto.type === 'video' ? '720p' : 'audio_mp3',
-    });
+        inputAssetId: mediaAsset.id,
+        target: dto.type === 'video' ? '720p' : 'audio_mp3',
+        inputFormat: fileExtension,
+      });
+    }
 
     return {
       reviewId: review.id,
-      status: review.status,
-      message: 'Review submitted and pending transcoding',
+      status: 'pending',
+      message: dto.type === 'text' ? 'Text review submitted' : 'Review submitted and transcoding queued',
     };
   }
 
-  // Chunked upload endpoints (simplified; assumes client handles chunking)
-  async uploadChunk(slug: string, reviewId: string, chunk: Express.Multer.File, chunkIndex: number) {
-    const business = await this.prisma.business.findUnique({
-      where: { slug, deletedAt: null },
-      select: { id: true },
-    });
-    if (!business) throw new NotFoundException('Business not found');
-
-    const review = await this.prisma.review.findFirst({
-      where: { id: reviewId, businessId: business.id, deletedAt: null },
-      select: { id: true },
-    });
-    if (!review) throw new NotFoundException('Review not found');
-
-    // Store chunk temporarily (e.g., in S3 or local storage)
-    const s3Key = `truetestify/${business.id}/reviews/${reviewId}/chunks/chunk-${chunkIndex}-${randomUUID()}`;
-    await this.storageService.uploadFile(chunk, s3Key);
-
-    return { chunkIndex, status: 'uploaded' };
-  }
-
-  async finalizeUpload(slug: string, reviewId: string, type: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { slug, deletedAt: null },
-      select: { id: true },
-    });
-    if (!business) throw new NotFoundException('Business not found');
-
-    const review = await this.prisma.review.findFirst({
-      where: { id: reviewId, businessId: business.id, deletedAt: null },
-      select: { id: true, type: true, consentChecked: true },
-    });
-    if (!review) throw new NotFoundException('Review not found');
-    if (!review.consentChecked) throw new BadRequestException('Consent not provided');
-    if (review.type !== type) throw new BadRequestException('Invalid media type');
-
-    // Assume chunks are combined into a single file (simplified; actual implementation requires merging)
-    const s3Key = `truetestify/${business.id}/reviews/${reviewId}/${type}-${randomUUID()}.${type === 'video' ? 'mp4' : 'mp3'}`;
-    const sizeBytes = 0; // Placeholder; calculate actual size after merging
-    const mediaAsset = await this.prisma.mediaAsset.create({
-      data: {
-        businessId: business.id,
-        reviewId: review.id,
-        assetType: type,
-        s3Key,
-        sizeBytes,
-        metadataJson: {},
-        durationSec: 0,
+  async getReview(reviewId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId, deletedAt: null },
+      include: {
+        mediaAssets: true,
       },
-      select: { id: true, s3Key: true },
     });
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
 
-    // Enqueue transcode job
-    await this.transcodeQueue.add({
-      businessId: business.id,
-      reviewId: review.id,
-      inputAssetId: mediaAsset.id,
-      s3Key,
-      target: type === 'video' ? '720p' : 'audio_mp3',
-    });
+    const reviewUrl = review.mediaAssets.length > 0 ? review.mediaAssets[0].s3Key : null;
 
-    return { reviewId, status: 'finalized', message: 'Upload finalized, transcoding queued' };
+    return {
+      ...review,
+      reviewUrl,
+    };
   }
 }

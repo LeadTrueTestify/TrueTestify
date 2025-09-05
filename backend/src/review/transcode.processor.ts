@@ -11,44 +11,36 @@ export class TranscodeProcessor {
   ) {}
 
   @Process()
-  async transcode(job: Job<{
-    businessId: string;
-    reviewId: string;
-    inputAssetId: string;
-    s3Key: string;
-    target: string;
-  }>) {
-    const { businessId, reviewId, inputAssetId, s3Key, target } = job.data;
+  async transcode(job: Job<{ businessId: string; reviewId: string; inputAssetId: string; target: string }>) {
+    const { businessId, reviewId, inputAssetId, target } = job.data;
 
-    try {
-      // Simplified transcoding logic (use FFmpeg or AWS Elastic Transcoder in production)
-      const outputKey = s3Key.replace('reviews', 'reviews/processed');
-      // Simulate transcoding: copy file to processed folder
-      await this.storageService.copyFile(s3Key, outputKey);
-
-      // Update media asset with metadata
-      await this.prisma.mediaAsset.update({
-        where: { id: inputAssetId, businessId, deletedAt: null },
-        data: {
-          metadataJson: {
-            resolution: target === '720p' ? '1280x720' : null,
-            bitrate: target === '720p' ? '1.5Mbps' : '128kbps',
-          },
-          durationSec: 30, // Placeholder; extract actual duration
-        },
-      });
-
-      // Update transcode job status
-      await this.prisma.transcodeJob.update({
-        where: { id: job.id.toString(), businessId, deletedAt: null },
-        data: { status: 'completed', updatedAt: new Date() },
-      });
-    } catch (error) {
-      await this.prisma.transcodeJob.update({
-        where: { id: job.id.toString(), businessId, deletedAt: null },
-        data: { status: 'failed', error: error.message, updatedAt: new Date() },
-      });
-      throw error;
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId, deletedAt: null },
+    });
+    if (!business) {
+      throw new Error('Business not found');
     }
+
+    const mediaAsset = await this.prisma.mediaAsset.findUnique({
+      where: { id: inputAssetId, reviewId, deletedAt: null },
+    });
+    if (!mediaAsset) {
+      throw new Error('Media asset not found');
+    }
+
+    const s3Key = mediaAsset.s3Key;
+    const outputKey = `${mediaAsset.s3Key.replace(/^(reviews\/(video|audio)\/)/, '$1processed/')}`;
+    
+    // Perform transcoding (placeholder; implement with ffmpeg or AWS Elastic Transcoder)
+    console.log(`Transcoding ${s3Key} to ${outputKey} for target ${target}`);
+
+    // Copy file to processed location
+    await this.storageService.copyFile(s3Key, outputKey, business.slug, business.slug);
+
+    // Update TranscodeJob status
+    await this.prisma.transcodeJob.update({
+      where: { id: job.id.toString() },
+      data: { status: 'completed' },
+    });
   }
 }

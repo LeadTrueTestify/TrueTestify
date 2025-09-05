@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { UserIcon, UserPlusIcon } from "@heroicons/react/16/solid";
-import { validateEmail } from "../utils/helper";
+import { validateEmail } from "../service/helper";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +20,7 @@ const Signup = () => {
   const [website, setWebsite] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [brandColor, setBrandColor] = useState("#ffffff"); // Default color
-  const [logoFile, setLogoFile] = useState(null); // State for the logo file
+  const [logo, setLogoFile] = useState(null); // State for the logo file
 
   // Use the mock signup function from the context
   const { signup } = useContext(AuthContext);
@@ -98,8 +98,8 @@ const Signup = () => {
       formData.append("contactEmail", contactEmail);
       formData.append("brandColor", brandColor);
 
-      if (logoFile) {
-        formData.append("logoFile", logoFile);
+      if (logo) {
+        formData.append("logo", logo);
       }
 
       const result = await signup(formData);

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../context/AuthContext';
 import { MOCK_REVIEWS } from '../assets/mockData';
-import ReviewCard from '../components/UI/ReviewCard';
+import ReviewCard from '../components/ReviewCard';
 import { Link } from 'react-router-dom';
 
 const Testimonial = () => {

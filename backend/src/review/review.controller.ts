@@ -1,39 +1,27 @@
-import { Controller, Post, Param, Body, UploadedFile, UseInterceptors, Query } from '@nestjs/common';
+import { Controller, Post, Get, Param, Body, UploadedFile, UseInterceptors, BadRequestException } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ReviewService } from './review.service';
 import { CreateReviewDto } from './dto/review.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('api/public')
 export class ReviewController {
   constructor(private reviewService: ReviewService) {}
 
   @Post(':slug/reviews')
-  @UseInterceptors(FileInterceptor('media'))
+  @UseInterceptors(FileInterceptor('file'))
   async createReview(
     @Param('slug') slug: string,
     @Body() dto: CreateReviewDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
+    if (!dto.consentChecked) {
+      throw new BadRequestException('Consent is mandatory');
+    }
     return this.reviewService.createReview(slug, dto, file);
   }
 
-  @Post(':slug/reviews/:reviewId/chunk')
-  @UseInterceptors(FileInterceptor('chunk'))
-  async uploadChunk(
-    @Param('slug') slug: string,
-    @Param('reviewId') reviewId: string,
-    @UploadedFile() chunk: Express.Multer.File,
-    @Query('chunkIndex') chunkIndex: number,
-  ) {
-    return this.reviewService.uploadChunk(slug, reviewId, chunk, chunkIndex);
-  }
-
-  @Post(':slug/reviews/:reviewId/finalize')
-  async finalizeUpload(
-    @Param('slug') slug: string,
-    @Param('reviewId') reviewId: string,
-    @Query('type') type: string,
-  ) {
-    return this.reviewService.finalizeUpload(slug, reviewId, type);
+  @Get('reviews/:reviewId')
+  async getReview(@Param('reviewId') reviewId: string) {
+    return this.reviewService.getReview(reviewId);
   }
 }

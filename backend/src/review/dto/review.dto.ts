@@ -1,29 +1,34 @@
-import { IsString, IsBoolean, IsOptional, IsInt, Min, Max, IsNotEmpty } from 'class-validator';
+import { IsString, IsInt, IsBoolean, IsEnum, IsOptional, IsDefined, ValidateIf } from 'class-validator';
 
 export class CreateReviewDto {
-  @IsString()
-  @IsNotEmpty()
-  type!: string; // 'video' or 'audio'
+  @IsEnum(['video', 'audio', 'text'])
+  type: string;
 
   @IsString()
-  @IsOptional()
-  title?: string;
+  @IsDefined({ message: 'Title is required' })
+  title: string;
 
+  @ValidateIf(o => o.type === 'text')
   @IsString()
-  @IsOptional()
+  @IsDefined({ message: 'Body text is required for text reviews' })
   bodyText?: string;
 
   @IsInt()
-  @Min(1)
-  @Max(5)
+  @IsDefined({ message: 'Rating is required' })
+  rating: number;
+
+  @IsString()
+  @IsDefined({ message: 'Reviewer name is required' })
+  reviewerName: string;
+
+  @IsBoolean()
+  @IsDefined({ message: 'Consent is required' })
+  consentChecked: boolean;
+
   @IsOptional()
-  rating?: number;
+  reviewerContactJson?: Record<string, any>;
 
   @IsString()
   @IsOptional()
-  reviewerName?: string;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  consentChecked!: boolean; // Mandatory consent
+  source?: string;
 }

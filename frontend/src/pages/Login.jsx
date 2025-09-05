@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import { validateEmail } from "../utils/helper";
+import { validateEmail } from "../service/helper";
 
 const Login = () => {
   const [email, setEmail] = useState("");

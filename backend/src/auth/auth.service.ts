@@ -60,7 +60,8 @@ export class AuthService {
       const sanitizedFileName = logoFile.originalname.replace(/\s+/g, '_');
       logoUrl = await this.storageService.uploadFile(
         logoFile,
-        `truetestify/${slug}/logos/${sanitizedFileName}`,
+        process.env.AWS_S3_BUCKET as string,
+        sanitizedFileName,
       );
     }
 
@@ -167,7 +168,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -251,6 +255,3 @@ export class AuthService {
     return user;
   }
 }
-
-
-  
